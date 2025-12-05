@@ -1,0 +1,124 @@
+@model AspnetCoreMvcFull.Models.MaterialList
+
+@{
+    ViewData["Title"] = "Material List";
+    long projectId = ViewBag.ProjectID;
+}
+<div class="card shadow-sm rounded-4 p-4 bg-white">
+
+
+<h3 class="mb-3">Material List</h3>
+<div class="mb-3">
+    <label class="form-label">Project Name:</label>
+    <input type="text" class="form-control" value="@ViewBag.ProjectName" readonly />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Customer Name:</label>
+    <input type="text" class="form-control" value="@ViewBag.CustomerName" readonly />
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form method="post" asp-action="AddMaterialList" asp-route-projectId="@projectId">
+
+    <table class="table table-bordered align-middle">
+        <thead class="bg-success text-white">
+            <tr>
+                <th>SR No</th>
+                <th>Description</th>
+                <th>Mark</th>
+                <th>Profile</th>
+                <th>Quantity</th>
+                <th>Length (mm)</th>
+                <th>Unit Weight (kg/m)</th>
+                <th>Total Weight (kg)</th>
+                <th style="width:70px;">Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="materialsBody"></tbody>
+    </table>
+
+    <button type="button" id="addRowBtn" class="btn btn-success mb-3">➕ Add Row</button>
+    <br />
+    <div class="d-flex justify-content-center gap-2">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-controller="ProjectDesign" asp-action="IndexProjectDesign" class="btn btn-secondary">Cancel</a>
+    </div>
+
+</form>
+</div>
+
+@section Scripts {
+<script>
+          document.addEventListener("DOMContentLoaded", function() {
+            let index = 0;
+
+            function updateSerialNumbers() {
+                let rows = document.querySelectorAll("#materialsBody tr");
+                rows.forEach((row, i) => {
+                    row.querySelector(".sr-no").textContent = i + 1;
+                    row.querySelector(".partNumberField").value = i + 1;
+                });
+            }
+
+            function calculateTotalWeight(row) {
+                let qty = parseFloat(row.querySelector(".qtyField").value) || 0;
+                let len = parseFloat(row.querySelector(".lenField").value) || 0;
+                let uw = parseFloat(row.querySelector(".unitWeightField").value) || 0;
+        let total = qty * (len / 1000) * uw;
+        row.querySelector(".totalWeightField").value = total.toFixed(2);
+            }
+
+            document.getElementById("addRowBtn").addEventListener("click", function () {
+                let row = document.createElement("tr");
+                row.style.background = "white";
+                row.innerHTML = `
+                    <td class="sr-no fw-bold"></td>
+                    <td><input name="materials[${index}].Description" class="form-control" /></td>
+                    <td><input name="materials[${index}].Mark" class="form-control" /></td>
+                    <td><input name="materials[${index}].Profile" class="form-control" /></td>
+                    <td><input type="number" name="materials[${index}].Quantity" class="form-control qtyField" step="any" /></td>
+                    <td><input type="number" name="materials[${index}].Length" class="form-control lenField"  step="any"/></td>
+                    <td><input type="number" name="materials[${index}].UnitWeight" class="form-control unitWeightField"  step="any"/></td>
+                    <td><input readonly name="materials[${index}].TotalWeight" class="form-control totalWeightField bg-light" /></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm deleteRowBtn">✕</button>
+                        <input type="hidden" name="materials[${index}].PartNumber" class="partNumberField" />
+                    </td>
+                `;
+
+                document.getElementById("materialsBody").appendChild(row);
+
+                row.querySelectorAll("input").forEach(input => {
+                    input.addEventListener("input", () => calculateTotalWeight(row));
+                });
+
+                index++;
+                updateSerialNumbers();
+            });
+
+            document.getElementById("materialsBody").addEventListener("click", function (e) {
+                if (e.target.classList.contains("deleteRowBtn")) {
+                    e.target.closest("tr").remove();
+                    updateSerialNumbers();
+                }
+            });
+        });
+</script>
+}

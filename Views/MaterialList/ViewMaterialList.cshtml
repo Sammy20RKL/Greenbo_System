@@ -1,0 +1,191 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.MaterialList>
+
+@{
+    ViewData["Title"] = "Material List";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Header Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="mb-0">
+                        <i class="bi bi-list-ul me-2"></i>Material List
+                    </h3>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a asp-action="AddMaterialList" class="btn btn-light btn-sm">
+                        <i class="bi bi-plus-circle"></i> Add More Materials
+                    </a>
+                    <a asp-controller="ProjectDesign" asp-action="IndexProjectDesign" class="btn btn-light btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back to Projects
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Search Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control"
+                               placeholder="Search by Description, Mark, or Profile...">
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="badge bg-info text-dark fs-6">
+                        Total Records: <span id="totalRecords">@Model.Count()</span>
+                    </span>
+                    <span class="badge bg-success fs-6 ms-2">
+                        Total Weight: <span id="totalWeight">@Model.Sum(m => m.TotalWeight)?.ToString("N2")</span> kg
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table ALWAYS visible -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle" id="materialsTable">
+                    <thead class="bg-success text-white">
+                        <tr>
+                            <th style="width: 60px;">SR No</th>
+                            <th style="width: 80px;">Project ID</th>
+                            <th>Description</th>
+                            <th>Mark</th>
+                            <th>Profile</th>
+                            <th style="width: 100px;">Quantity</th>
+                            <th style="width: 120px;">Length (mm)</th>
+                            <th style="width: 140px;">Unit Weight (kg/m)</th>
+                            <th style="width: 140px;">Total Weight (kg)</th>
+                            <th style="width: 180px;">Created At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tableBody">
+                        @if (Model.Any())
+                        {
+                            foreach (var material in Model.OrderBy(m => m.PartNumber))
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold">@material.PartNumber</td>
+                                    <td class="text-center fw-bold text-info">@material.ProjectID</td>
+                                    <td>@material.Description</td>
+                                    <td>@material.Mark</td>
+                                    <td>@material.Profile</td>
+                                    <td class="text-center">@material.Quantity</td>
+                                    <td class="text-end">@material.Length?.ToString("N2")</td>
+                                    <td class="text-end">@material.UnitWeight?.ToString("N2")</td>
+                                    <td class="text-end fw-bold text-primary">@material.TotalWeight?.ToString("N2")</td>
+                                    <td class="text-center">@material.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted py-3">
+                                    <i class="bi bi-exclamation-circle me-2"></i>
+                                    No materials have been added for this project.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                    <tfoot class="bg-light">
+                        <tr>
+                            <th colspan="8" class="text-end">Grand Total:</th>
+                            <th class="text-end text-success fs-6">@Model.Sum(m => m.TotalWeight)?.ToString("N2") kg</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div id="noResults" class="alert alert-warning text-center" style="display: none;">
+                <i class="bi bi-exclamation-circle me-2"></i>No materials found matching your search.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const searchInput = document.getElementById("searchInput");
+            const tableBody = document.getElementById("tableBody");
+            const noResults = document.getElementById("noResults");
+            const totalRecords = document.getElementById("totalRecords");
+            const totalWeight = document.getElementById("totalWeight");
+
+            searchInput.addEventListener("input", function () {
+
+                const searchTerm = this.value.toLowerCase().trim();
+                const rows = tableBody.querySelectorAll("tr");
+                let visibleCount = 0;
+                let visibleTotalWeight = 0;
+
+                rows.forEach(row => {
+
+                    if (row.children.length === 1) return; // skip "no materials" row
+
+                    const description = row.cells[2].textContent.toLowerCase();
+                    const mark = row.cells[3].textContent.toLowerCase();
+                    const profile = row.cells[4].textContent.toLowerCase();
+
+                    if (
+                        description.includes(searchTerm) ||
+                        mark.includes(searchTerm) ||
+                        profile.includes(searchTerm)
+                    ) {
+                        row.style.display = "";
+                        visibleCount++;
+
+                        const weight = parseFloat(row.cells[8].textContent.replace(/,/g, "")) || 0;
+                        visibleTotalWeight += weight;
+
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+
+                // Update summary counters
+                totalRecords.textContent = visibleCount;
+                totalWeight.textContent = visibleTotalWeight.toFixed(2);
+
+                // show/hide no-results
+                if (visibleCount === 0 && searchTerm !== "") {
+                    noResults.style.display = "block";
+                } else {
+                    noResults.style.display = "none";
+                }
+            });
+        });
+    </script>
+}

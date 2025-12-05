@@ -1,0 +1,37 @@
+/* Custom styles goes here */
+/* Make the dropdown small, clean, modern */
+.navbar .dropdown-menu {
+  min-width: 220px !important; /* small + compact */
+  border-radius: 12px !important; /* rounded */
+  padding: 8px 0 !important; /* tighter padding */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+  border: none !important;
+}
+
+  /* space around items */
+  .navbar .dropdown-menu .dropdown-item {
+    padding: 8px 16px !important;
+    font-size: 14px;
+  }
+
+  /* divider style */
+  .navbar .dropdown-menu .dropdown-divider {
+    margin: 6px 0 !important;
+    border-color: #eee !important;
+  }
+
+/* Avatar button adjustments */
+.navbar .dropdown-user .avatar {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.navbar .dropdown-user .nav-link {
+  padding: 0 !important;
+}
+
+/* Position menu tightly under avatar */
+.navbar .dropdown-user .dropdown-menu-end {
+  margin-top: 6px !important;
+  right: 0 !important;
+}

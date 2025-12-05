@@ -1,0 +1,144 @@
+@model AspnetCoreMvcFull.Models.OrderOperation
+
+
+<h3>Create Order Operation</h3>
+
+<div class="card p-4 shadow-sm rounded-4 bg-white">
+    <form asp-action="Create" method="post">
+
+        <!-- PROJECT SELECTION -->
+        <div class="mb-3">
+            <label>Project</label>
+            <div class="input-group">
+                <input asp-for="ProjectID" class="form-control" id="projectField" readonly placeholder="Click to select project" />
+                <button type="button" class="btn btn-secondary" id="btnProjectModal">Select</button>
+            </div>
+        </div>
+
+        <!-- PART SELECTION -->
+        <div class="mb-3">
+            <label>Part Number</label>
+            <div class="input-group">
+                <input asp-for="PartNumber" class="form-control" id="partField" readonly placeholder="Click to select part" />
+                <button type="button" class="btn btn-secondary" id="btnPartModal">Select</button>
+            </div>
+        </div>
+
+        <!-- PROCESS -->
+        <div class="mb-3">
+            <label>Process</label>
+            <input asp-for="Process" class="form-control" required />
+        </div>
+
+        <!-- ASSIGNED TO -->
+        <div class="mb-3">
+            <label>Assigned To</label>
+            <input asp-for="AssignedTo" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="modal fade" id="projectModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content p-3">
+            <h5>Select Project</h5>
+            <table class="table table-bordered" id="projectTable">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th>ID</th>
+                        <th>Project Name</th>
+                        <th>Company</th>
+                        <th>Status</th>
+                        <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- PART MODAL -->
+<div class="modal fade" id="partModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content p-3">
+            <h5>Select Part</h5>
+            <table class="table table-bordered" id="partTable">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th>Part Number</th>
+                        <th>Description</th>
+                        <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            // Open project modal and load table
+            $("#btnProjectModal, #projectField").click(function() {
+                $.get("/OrderOperation/GetProjects", function(data) {
+                    var tbody = $("#projectTable tbody");
+                    tbody.empty();
+                    data.forEach(function(p) {
+                        tbody.append(`<tr>
+                            <td>${p.ID}</td>
+                            <td>${p.ProjectName}</td>
+                            <td>${p.CompanyID}</td>
+                            <td>${p.Status}</td>
+                            <td><button class="btn btn-primary selectProject" data-id="${p.ID}">Select</button></td>
+                        </tr>`);
+                    });
+                    $("#projectModal").modal("show");
+                });
+            });
+
+            // Select project
+            $(document).on("click", ".selectProject", function() {
+                var projectId = $(this).data("id");
+                $("#projectField").val(projectId);
+                $("#projectModal").modal("hide");
+                $("#partField").val(''); // clear part
+            });
+
+            // Open part modal and load parts for selected project
+            $("#btnPartModal, #partField").click(function() {
+                var projectId = $("#projectField").val();
+                if (!projectId) {
+                    alert("Please select a project first!");
+                    return;
+                }
+
+                $.get("/OrderOperation/GetParts?projectId=" + projectId, function(data) {
+                    var tbody = $("#partTable tbody");
+                    tbody.empty();
+                    data.forEach(function(p) {
+                        tbody.append(`<tr>
+                            <td>${p.PartNumber}</td>
+                            <td>${p.Description}</td>
+                            <td><button class="btn btn-primary selectPart" data-number="${p.PartNumber}">Select</button></td>
+                        </tr>`);
+                    });
+                    $("#partModal").modal("show");
+                });
+            });
+
+            // Select part
+            $(document).on("click", ".selectPart", function() {
+                var partNumber = $(this).data("number");
+                $("#partField").val(partNumber);
+                $("#partModal").modal("hide");
+            });
+        });
+    </script>
+}

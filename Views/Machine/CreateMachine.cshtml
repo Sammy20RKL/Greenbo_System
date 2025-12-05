@@ -1,0 +1,25 @@
+@model AspnetCoreMvcFull.Models.MachineRegistration
+
+<div class="modal-header">
+    <h5 class="modal-title">Create New Machine</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <form id="createMachineForm" method="post" asp-action="CreateMachine">
+        <div class="mb-3">
+            <label asp-for="MachineName" class="form-label">Machine Name</label>
+            <input asp-for="MachineName" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label asp-for="MachinePurpose" class="form-label">Machine Purpose</label>
+            <input asp-for="MachinePurpose" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label asp-for="MachineManufacturer" class="form-label">Manufacturer</label>
+            <input asp-for="MachineManufacturer" class="form-control" required />
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-success">Save</button>
+        </div>
+    </form>
+</div>

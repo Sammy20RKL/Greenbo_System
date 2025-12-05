@@ -1,0 +1,23 @@
+@model AspnetCoreMvcFull.Models.MachineRegistration
+
+<div class="modal-header">
+    <h5 class="modal-title">Machine Details</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <div class="mb-3">
+        <label class="form-label">Machine Name</label>
+        <input class="form-control" value="@Model.MachineName" readonly />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Machine Purpose</label>
+        <input class="form-control" value="@Model.MachinePurpose" readonly />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Manufacturer</label>
+        <input class="form-control" value="@Model.MachineManufacturer" readonly />
+    </div>
+    
+  
+</div>

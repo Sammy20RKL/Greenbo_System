@@ -1,0 +1,96 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.OrderOperation>
+
+@{
+    ViewData["Title"] = "Order Operations";
+}
+<div class="card p-4 shadow-sm rounded-4 bg-white">
+    <h3 class="mb-4 text-left">Order Operations</h3>
+
+    <!-- Search + Create New Button -->
+    <div class="d-flex justify-content-between mb-3">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="searchString" class="form-control"
+                   placeholder="Search project, part, user, status..."
+                   value="@Context.Request.Query["searchString"]">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        <!-- Create New Button -->
+        <a asp-controller="OrderOperation" asp-action="CreateOrderOperation" class="btn btn-success">
+            + Create Order Operation
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <table class="table table-bordered table-sm">
+        <thead style="background-color: green; color: white;">
+            <tr>
+                <th>Project ID</th>
+                <th>Part Number</th>
+                <th>Process</th>
+                <th>Assigned To</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr style="background-color: white;">
+                    <td>@item.ProjectID</td>
+                    <td>@item.PartNumber</td>
+                    <td>@item.Process</td>
+                    <td>@item.AssignedTo</td>
+                    <td>@item.Status</td>
+                    <td class="d-flex gap-1">
+                        <a asp-action="ViewOrderOperation" asp-route-id="@item.ID"
+                           class="btn btn-info btn-sm">View</a>
+
+                        <a asp-action="Delete" asp-route-id="@item.ID"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Are you sure you want to delete this operation?');">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    table.table-bordered td,
+    table.table-bordered th {
+        padding: 0.35rem 0.5rem;
+        vertical-align: middle;
+        font-size: 0.875rem;
+    }
+
+    /* FORCE all table rows to be white */
+    table.table-bordered tbody tr {
+        background-color: white !important;
+        color: black !important;
+    }
+
+    /* FORCE table headers to be white text on green */
+    table.table-bordered thead th {
+        background-color: green !important;
+        color: white !important;
+    }
+
+    /* FORCE the create button to be green */
+    .btn-create {
+        background-color: #198754 !important; /* bootstrap success green */
+        color: white !important;
+        border-color: #198754 !important;
+    }
+
+
+</style>

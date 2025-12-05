@@ -1,0 +1,71 @@
+@model List<AspnetCoreMvcFull.Models.ProjectDesign>
+
+@{
+    ViewData["Title"] = "Project Designs";
+}
+
+<div class="card shadow-sm rounded-4 p-4 bg-white">
+
+    <h3 class="mb-4">Project Designs</h3>
+
+    <!-- Search Form -->
+    <form method="get" class="mb-3 d-flex gap-2">
+        <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control" placeholder="Search by Project ID or File Name..." />
+        <button type="submit" class="btn btn-success">Search</button>
+    </form>
+
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="bg-success text-white">
+            <tr>
+                <th>Project ID</th>
+                <th>File Upload</th>
+                <th>Created At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                foreach (var design in Model)
+                {
+                    <tr>
+                        <td>@design.ProjectID</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(design.FileUpload))
+                            {
+                                <a href="@design.FileUpload" target="_blank" class="btn btn-sm btn-outline-primary">📎 Download</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No file</span>
+                            }
+                        </td>
+                        <td>@design.CreatedAt?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                        <td class="text-center">
+                            <!-- Leave blank for now; action will be added later -->
+
+                            <a asp-controller="MaterialList" asp-action="AddMaterialList" asp-route-projectId="@design.ProjectID" class="btn btn-sm btn-primary">
+                               Add Material List
+                            </a>
+                            <a asp-controller="MaterialList"
+                               asp-action="IndexMaterialList"
+                               asp-route-projectId="@design.ProjectID"
+                               class="btn btn-sm btn-secondary">
+                                View Material List
+                            </a>
+
+                        
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted fst-italic">No project designs found</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>

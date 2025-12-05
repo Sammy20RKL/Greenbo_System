@@ -1,0 +1,70 @@
+@model List<AspnetCoreMvcFull.Models.MaterialList>
+
+@{
+    ViewData["Title"] = "View Material List";
+    long projectId = ViewBag.ProjectID;
+}
+<h3 class="mb-3">Material List</h3>
+
+<div class="card shadow-sm p-4 bg-white">
+    <div class="mb-3">
+        <label class="form-label">Project Name:</label>
+        <input type="text" class="form-control" value="@ViewBag.ProjectName" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Customer Name:</label>
+        <input type="text" class="form-control" value="@ViewBag.CustomerName" readonly />
+    </div>
+
+    <div class="d-flex justify-content-end mb-3">
+<a asp-controller="MaterialList"
+   asp-action="AddMaterialList"
+   asp-route-projectId="@projectId"
+   class="btn btn-success mb-3">
+    ➕ Add More Materials
+</a>
+</div>
+
+
+
+<table class="table table-bordered">
+    <thead class="bg-primary text-white">
+        <tr>
+            <th>SR No</th>
+            <th>Description</th>
+            <th>Mark</th>
+            <th>Profile</th>
+            <th>Quantity</th>
+            <th>Length (mm)</th>
+            <th>Unit Weight (kg/m)</th>
+            <th>Total Weight (kg)</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            <tr>
+                <td>@(i + 1)</td>
+                <td>@Model[i].Description</td>
+                <td>@Model[i].Mark</td>
+                <td>@Model[i].Profile</td>
+                <td>@Model[i].Quantity</td>
+                <td>@Model[i].Length</td>
+                <td>@Model[i].UnitWeight</td>
+                <td>@Model[i].TotalWeight</td>
+            </tr>
+        }
+    </tbody>
+</table>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">No materials found for this project.</div>
+    }
+<div class="d-flex justify-content-center mt-3">
+<a asp-controller="ProjectDesign" asp-action="IndexProjectDesign" class="btn btn-secondary mt-3">
+    Back
+</a>
+</div>
+</div>

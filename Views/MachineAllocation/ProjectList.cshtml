@@ -1,0 +1,27 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.Project>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Project Name</th>
+            <th>Client</th>
+            <th>Select</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.ProjectName</td>
+                <td>@p.CompanyID</td>
+                <td>
+                    <button class="btn btn-success"
+                            onclick="selectProject(@p.ID, '@p.ProjectName')">
+                        Select
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

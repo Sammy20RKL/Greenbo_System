@@ -1,0 +1,125 @@
+@model AspnetCoreMvcFull.Models.MachineAllocation
+
+<div class="d-flex justify-content-center mt-2">
+    <div class="card shadow-sm rounded-4 p-4 bg-white" style="max-width: 700px; width: 100%;">
+        <h3 class="mb-4 text-center">Edit Machine Allocation</h3>
+
+        <form asp-action="EditAllocation" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ID" />
+
+            <!-- MACHINE -->
+            <div class="mb-3">
+                <label class="form-label">Select Machine</label>
+                <div class="input-group">
+                    <input type="text" id="MachineDisplayEdit" class="form-control" value="@Model.Machine?.MachineName" readonly />
+                    <input type="hidden" name="MachineID" id="MachineIDEdit" value="@Model.MachineID" />
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#machineEditModal">Choose</button>
+                </div>
+            </div>
+
+            <!-- PROJECT -->
+            <div class="mb-3">
+                <label class="form-label">Select Project</label>
+                <div class="input-group">
+                    <input type="text" id="ProjectDisplayEdit" class="form-control" value="@Model.Project?.ProjectName" readonly />
+                    <input type="hidden" name="ProjectID" id="ProjectIDEdit" value="@Model.ProjectID" />
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#projectEditModal">Choose</button>
+                </div>
+            </div>
+
+            <!-- USER -->
+            <div class="mb-3">
+                <label asp-for="UserID" class="form-label">User ID</label>
+                <input asp-for="UserID" class="form-control" required />
+            </div>
+
+            <!-- DATE -->
+            <div class="mb-3">
+                <label asp-for="Datex" class="form-label">Date</label>
+                <input asp-for="Datex" type="date" class="form-control" value="@Model.Datex.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="d-flex justify-content-center gap-2">
+                <button class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MACHINE EDIT MODAL -->
+<div class="modal fade" id="machineEditModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Select Machine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr><th>Name</th><th>Purpose</th><th>Select</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var m in ViewBag.Machines)
+                        {
+                            <tr>
+                                <td>@m.MachineName</td>
+                                <td>@m.MachinePurpose</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="selectMachineEdit('@m.ID','@m.MachineName')" data-bs-dismiss="modal">Choose</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PROJECT EDIT MODAL -->
+<div class="modal fade" id="projectEditModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Select Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr><th>Project Name</th><th>Company ID</th><th>Select</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in ViewBag.Projects)
+                        {
+                            <tr>
+                                <td>@p.ProjectName</td>
+                                <td>@p.CompanyID</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="selectProjectEdit('@p.ID','@p.ProjectName')" data-bs-dismiss="modal">Choose</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function selectMachineEdit(id, name) {
+            document.getElementById("MachineIDEdit").value = id;
+            document.getElementById("MachineDisplayEdit").value = name;
+        }
+
+        function selectProjectEdit(id, name) {
+            document.getElementById("ProjectIDEdit").value = id;
+            document.getElementById("ProjectDisplayEdit").value = name;
+        }
+    </script>
+}

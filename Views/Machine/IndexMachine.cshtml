@@ -1,0 +1,125 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.MachineRegistration>
+
+@{
+    ViewData["Title"] = "Machines";
+}
+
+<div class="card p-4 shadow-sm rounded-4 bg-white">
+    <h3 class="mb-4">Machines</h3>
+
+    <div class="d-flex justify-content-between mb-3">
+        <form method="get" class="d-flex">
+            <input type="text" name="searchString" class="form-control me-2" placeholder="Search..." value="@Context.Request.Query["searchString"]">
+            <button type="submit" class="btn btn-outline-success">Search</button>
+        </form>
+
+        <button class="btn btn-primary" id="createMachineBtn">Create New Machine</button>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <table class="table table-bordered table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Machine Name</th>
+                <th>Purpose</th>
+                <th>Manufacturer</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var machine in Model)
+            {
+                <tr>
+                    <td>@machine.MachineName</td>
+                    <td>@machine.MachinePurpose</td>
+                    <td>@machine.MachineManufacturer</td>
+                    <td>
+                        <button class="btn btn-info btn-sm viewMachineBtn" data-id="@machine.ID">View</button>
+                        <button class="btn btn-warning btn-sm editMachineBtn" data-id="@machine.ID">Edit</button>
+                        <a asp-action="Delete" asp-route-id="@machine.ID" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Are you sure?');">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="createMachineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"></div>
+    </div>
+</div>
+<div class="modal fade" id="editMachineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewMachineModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Open Create Modal
+            $('#createMachineBtn').click(function () {
+                $.get('@Url.Action("CreateMachine", "Machine")', function (data) {
+                    $('#createMachineModal .modal-content').html(data);
+                    $('#createMachineModal').modal('show');
+                });
+            });
+            //Edit Modal
+              $('.editMachineBtn').click(function () {
+                var id = $(this).data('id');
+                $.get('/Machine/EditMachine/' + id, function (data) {
+                    $('#editMachineModal .modal-content').html(data);
+                    $('#editMachineModal').modal('show');
+                });
+            });
+            // Open View Modal
+            $('.viewMachineBtn').click(function () {
+                var id = $(this).data('id');
+                $.get('/Machine/ViewMachine/' + id, function (data) {
+                    $('#viewMachineModal .modal-content').html(data);
+                    $('#viewMachineModal').modal('show');
+                });
+            });
+
+            // Optional: AJAX form submit for create
+            $(document).on('submit', '#createMachineForm', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.post(form.attr('action'), form.serialize(), function (data) {
+                    if (data.success) {
+                        $('#createMachineModal').modal('hide');
+                        location.reload(); // reload table after adding
+                    } else {
+                        $('#createMachineModal .modal-content').html(data);
+                    }
+                });
+            });
+            //optional: AJAX form submit for edit
+            $(document).on('submit', '#editMachineForm', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.post(form.attr('action'), form.serialize(), function (data) {
+                    if (data.success) {
+                        $('#editMachineModal').modal('hide');
+                        location.reload();
+                    } else {
+                        $('#editMachineModal .modal-content').html(data);
+                    }
+                });
+            });
+        });
+    </script>
+}

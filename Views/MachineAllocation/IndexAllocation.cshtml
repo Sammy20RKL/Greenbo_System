@@ -1,0 +1,150 @@
+@model List<AspnetCoreMvcFull.Models.MachineAllocation>
+
+@{
+    ViewData["Title"] = "Machine Allocations";
+}
+
+<div class="card p-4 shadow-sm rounded-4 bg-white">
+
+    <div class="d-flex justify-content-between mb-3">
+        <h3>Machine Allocations</h3>
+        <button class="btn btn-success" id="createAllocationBtn">+ Allocate Machine</button>
+    </div>
+
+    <!-- Success message -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search -->
+    <form method="get" class="d-flex gap-2 mb-3">
+        <input type="text" name="searchString" class="form-control" placeholder="Search machine, project, user..." />
+        <button class="btn btn-primary">Search</button>
+    </form>
+
+    <table class="table table-bordered table-sm" style="font-size:0.875rem;">
+        <thead class="table-dark">
+            <tr>
+                <th>Machine</th>
+                <th>Project</th>
+                <th>User</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Machine?.MachineName</td>
+                    <td>@item.Project?.ProjectName</td>
+                    <td>@item.UserID</td>
+                    <td>@item.Datex.ToShortDateString()</td>
+                    <td class="d-flex gap-1">
+                        <button class="btn btn-primary btn-sm viewAllocationBtn" data-id="@item.ID">View</button>
+                        <button class="btn btn-warning btn-sm editAllocationBtn" data-id="@item.ID">Edit</button>
+                        <a asp-action="Delete" asp-route-id="@item.ID"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Delete this allocation?');">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="createAllocationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewAllocationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="editAllocationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // Open Create Modal
+            $('#createAllocationBtn').click(function () {
+                $.get('@Url.Action("CreateAllocation", "MachineAllocation")', function (data) {
+                    $('#createAllocationModal .modal-content').html(data);
+                    $('#createAllocationModal').modal('show');
+                });
+            });
+
+            // Open View Modal
+            $('.viewAllocationBtn').click(function () {
+                var id = $(this).data('id');
+                $.get('/MachineAllocation/ViewAllocation/' + id, function (data) {
+                    $('#viewAllocationModal .modal-content').html(data);
+                    $('#viewAllocationModal').modal('show');
+                });
+            });
+
+            // Open Edit Modal
+            $('.editAllocationBtn').click(function () {
+                var id = $(this).data('id');
+                $.get('/MachineAllocation/EditAllocation/' + id, function (data) {
+                    $('#editAllocationModal .modal-content').html(data);
+                    $('#editAllocationModal').modal('show');
+                });
+            });
+
+            // AJAX Form Submission (Create/Edit)
+            $(document).on('submit', 'form', function (e) {
+                e.preventDefault();
+
+                var form = $(this);
+                var url = form.attr('action');
+                var method = form.attr('method');
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Close all modals
+                            $('.modal').modal('hide');
+
+                            // Show success alert
+                            $('<div class="alert alert-success alert-dismissible fade show mt-2" role="alert">' +
+                                response.message +
+                                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                                '</div>').prependTo('.card');
+
+                            // Refresh allocations table
+                            $.get('@Url.Action("IndexAllocation", "MachineAllocation")', function (data) {
+                                var table = $(data).find('table').html();
+                                $('table').html(table);
+                            });
+                        } else {
+                            // Reload modal content if validation fails
+                            form.closest('.modal-content').html(response);
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+
+}

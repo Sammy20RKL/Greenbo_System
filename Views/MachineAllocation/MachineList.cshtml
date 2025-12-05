@@ -1,0 +1,27 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.MachineRegistration>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Machine Name</th>
+            <th>Type</th>
+            <th>Select</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>@m.MachineName</td>
+                <td>@m.MachinePurpose</td>
+                <td>
+                    <button class="btn btn-success"
+                            onclick="selectMachine(@m.ID, '@m.MachineName')">
+                        Select
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

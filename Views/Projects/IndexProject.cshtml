@@ -1,0 +1,51 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.Project>
+@{
+    ViewData["Title"] = "Projects List";
+    var searchTerm = ViewBag.SearchTerm as string ?? "";
+}
+
+<h3 class="mb-4">Projects</h3>
+
+<form method="get" class="mb-3 d-flex gap-2">
+    <input type="text" name="searchTerm" class="form-control" placeholder="Search by Project or Company" value="@searchTerm" />
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<div class="card shadow-sm rounded-4 p-3">
+    <table class="table table-hover align-middle">
+        <thead class="table-success">
+            <tr>
+                <th>Company Name</th>
+                <th>Project Name</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No projects found</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var project in Model)
+                {
+                    <tr>
+                        <td>@project.Company?.CompanyName </td>
+                        <td>@project.ProjectName</td>
+                        <td>@project.Quantity</td>
+                        <td>
+                            <span class="badge bg-@(project.Status == "Approved" ? "success" : project.Status == "Pending" ? "warning" : "secondary")">
+                                @project.Status
+                            </span>
+                        </td>
+                        <td>@project.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

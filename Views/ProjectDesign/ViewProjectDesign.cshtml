@@ -1,0 +1,68 @@
+@model AspnetCoreMvcFull.Models.ProjectDesign
+
+@{
+    ViewData["Title"] = "Convert Project to Design";
+}
+
+<div class="card shadow p-4 bg-white rounded-4" style="max-width: 700px; margin: auto;">
+    <h3 class="mb-4 text-center">Convert Project → Design</h3>
+
+    @* Display Success or Error messages *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Project Name</label>
+        <input value="@ViewBag.ProjectName" class="form-control bg-light" readonly />
+    </div>
+
+    <form id="projectDesignForm" asp-action="Create" asp-controller="ProjectDesign" method="post" enctype="multipart/form-data">
+        <input type="hidden" asp-for="ProjectID" />
+
+        <div class="mb-3">
+            <label class="form-label">Upload Design File</label>
+            <input type="file" id="uploadFile" name="uploadFile" class="form-control" />
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">Save Design</button>
+            <a asp-controller="Company" asp-action="CompanyInformation" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('projectDesignForm').addEventListener('submit', function (e) {
+            var fileInput = document.getElementById('uploadFile');
+            var hasDesign = @((ViewBag.HasDesign != null && (bool)ViewBag.HasDesign) ? "true" : "false");
+
+            if (!fileInput.value) {
+                alert("Please select a file before saving.");
+                e.preventDefault();
+                return;
+            }
+
+            var message = "Do you want to save this design?";
+            if (hasDesign === "true") {
+                message = "A design for this project already exists. Saving again may create duplicates. Do you want to continue?";
+            }
+
+            if (!confirm(message)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

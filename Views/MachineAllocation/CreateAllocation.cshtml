@@ -1,0 +1,126 @@
+@model AspnetCoreMvcFull.Models.MachineAllocation
+
+<div class="d-flex justify-content-center mt-2">
+    <div class="card shadow-sm rounded-4 p-4 bg-white" style="max-width:700px; width:100%;">
+        <h3 class="mb-4 text-center">@((Model.ID == 0) ? "Allocate New Machine" : "Edit Allocation")</h3>
+
+        <form id="allocationForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ID" />
+
+            <!-- MACHINE -->
+            <div class="mb-3">
+                <label class="form-label">Select Machine</label>
+                <div class="input-group">
+                    <input type="text" id="MachineDisplay" class="form-control" placeholder="Choose machine" readonly
+                           value="@Model.Machine?.MachineName" />
+                    <input type="hidden" asp-for="MachineID" id="MachineID" />
+                    <button type="button" class="btn btn-success" id="chooseMachineBtn">Choose</button>
+                </div>
+            </div>
+
+            <!-- PROJECT -->
+            <div class="mb-3">
+                <label class="form-label">Select Project</label>
+                <div class="input-group">
+                    <input type="text" id="ProjectDisplay" class="form-control" placeholder="Choose project" readonly
+                           value="@Model.Project?.ProjectName" />
+                    <input type="hidden" asp-for="ProjectID" id="ProjectID" />
+                    <button type="button" class="btn btn-success" id="chooseProjectBtn">Choose</button>
+                </div>
+            </div>
+
+            <!-- USER -->
+            <div class="mb-3">
+                <label asp-for="UserID" class="form-label">User ID</label>
+                <input asp-for="UserID" class="form-control" required />
+            </div>
+
+            <!-- DATE -->
+            <div class="mb-3">
+                <label asp-for="Datex" class="form-label">Date</label>
+                <input asp-for="Datex" type="date" class="form-control"
+                       value="@Model.Datex.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="d-flex justify-content-center gap-2">
+                <button type="submit" class="btn btn-primary">@((Model.ID == 0) ? "Save" : "Update")</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MACHINE Modal -->
+<div class="modal fade" id="machineModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<!-- PROJECT Modal -->
+<div class="modal fade" id="projectModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // Open Machine Modal
+            $('#chooseMachineBtn').click(function () {
+                $.get('/MachineAllocation/MachineList', function (data) {
+                    $('#machineModal .modal-content').html(data);
+                    $('#machineModal').modal('show');
+                });
+            });
+
+            // Open Project Modal
+            $('#chooseProjectBtn').click(function () {
+                $.get('/MachineAllocation/ProjectList', function (data) {
+                    $('#projectModal .modal-content').html(data);
+                    $('#projectModal').modal('show');
+                });
+            });
+
+            // AJAX Save (Create or Edit)
+            $('#allocationForm').submit(function (e) {
+                e.preventDefault();
+                var form = $(this);
+
+                var url = '@(Model.ID == 0 ? Url.Action("CreateAllocation") : Url.Action("EditAllocation"))';
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#allocationModal').modal('hide');
+                            location.reload();
+                        } else {
+                            $('#allocationModal .modal-content').html(response);
+                        }
+                    }
+                });
+            });
+        });
+
+        // Set selected machine
+        function selectMachine(id, name) {
+            $('#MachineID').val(id);
+            $('#MachineDisplay').val(name);
+            $('#machineModal').modal('hide');
+        }
+
+        // Set selected project
+        function selectProject(id, name) {
+            $('#ProjectID').val(id);
+            $('#ProjectDisplay').val(name);
+            $('#projectModal').modal('hide');
+        }
+    </script>
+}
