@@ -1,0 +1,162 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.WorkOrderStepEffort>
+
+<div class="card p-4 shadow-sm rounded-4 bg-white">
+    <h3 class="mb-4 text-left">Work Order Steps</h3>
+
+    <div class="d-flex justify-content-between mb-3">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="searchString" class="form-control" placeholder="Search..."
+                   value="@Context.Request.Query["searchString"]" />
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        <button class="btn btn-success" onclick="openStepModal(0)">+ Create Step</button>
+    </div>
+
+    <table class="table table-bordered table-sm">
+        <thead class="bg-success text-white">
+            <tr>
+                <th>Operation</th>
+                <th>Machine</th>
+                <th>Operator</th>
+                <th>Quantity Assigned</th>
+                <th>Quantity Completed</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.OrderOperation?.ID</td>
+                    <td>@item.Machine?.MachineName</td>
+                    <td>@item.OperatorId</td>
+                    <td>@item.QuantityAssigned</td>
+                    <td>@item.QuantityCompleted</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="openViewStepModal(@item.EffortId)">View</button>
+                        <button class="btn btn-warning btn-sm" onclick="openStepModal(@item.EffortId)">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteStep(@item.EffortId)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Step Modal -->
+<div class="modal fade" id="stepModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="stepModalContent"></div>
+    </div>
+</div>
+<!-- View Step Modal -->
+<div class="modal fade" id="viewStepModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="viewStepModalContent"></div>
+    </div>
+</div>
+
+
+<!-- Operation / Machine / Operator Modals -->
+<div class="modal fade" id="operationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="operationModalContent"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="machineModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="machineModalContent"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="operatorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="operatorModalContent"></div>
+    </div>
+</div>
+
+<script>
+    function openStepModal(id) {
+        $.get('/WorkOrderStep/CreateEditStep/' + id, function(data){
+            $("#stepModalContent").html(data);
+            $("#stepModal").modal('show');
+        });
+    }
+
+    function saveStep() {
+        $.ajax({
+            url: "/WorkOrderStep/CreateEditStep",
+            method: "POST",
+            data: $("#stepForm").serialize(),
+            success: function(res) {
+                if(res.success) {
+                    $("#stepModal").modal('hide');
+                    alert(res.message);
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            },
+            error: function() {
+                alert("Unexpected error occurred!");
+            }
+        });
+    }
+
+    function deleteStep(id) {
+        if(confirm("Are you sure to delete this step?")) {
+            $.get("/WorkOrderStep/Delete/" + id, function(res){
+                if(res.success){
+                    alert(res.message);
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+    }
+
+    function openOperationPopup() {
+        $.get('/WorkOrderStep/SelectOperation', function(data){
+            $("#operationModalContent").html(data);
+            $("#operationModal").modal('show');
+        });
+    }
+
+    function openMachinePopup() {
+        $.get('/WorkOrderStep/SelectMachine', function(data){
+            $("#machineModalContent").html(data);
+            $("#machineModal").modal('show');
+        });
+    }
+
+    function openOperatorPopup() {
+        $.get('/WorkOrderStep/SelectOperator', function(data){
+            $("#operatorModalContent").html(data);
+            $("#operatorModal").modal('show');
+        });
+    }
+        function openViewStepModal(id) {
+        $.get('/WorkOrderStep/ViewStep/' + id, function(data){
+            $("#viewStepModalContent").html(data);
+            $("#viewStepModal").modal('show');
+        });
+    }
+         function selectMachine(machineId) {
+        $.get('/WorkOrderStep/CheckMachineAvailability', { machineId: machineId }, function(res) {
+            if(res.inUse) {
+                alert(res.message);   
+                $('#MachineId').val(''); // Clear selection
+            } else {
+                $('#MachineId').val(machineId); 
+                $('#machineModal').modal('hide'); // Close modal
+            }
+        }).fail(function() {
+            alert("Error checking machine availability. Please try again.");
+        });
+    }
+
+
+</script>

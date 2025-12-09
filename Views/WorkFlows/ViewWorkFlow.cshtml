@@ -1,0 +1,15 @@
+@model AspnetCoreMvcFull.Models.WorkFlow
+
+<div class="modal-header">
+    <h5 class="modal-title">View Workflow</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="mb-2"><strong>Process Name:</strong> @Model.ProcessName</div>
+    <div class="mb-2"><strong>Description:</strong> @Model.Description</div>
+    <div class="mb-2"><strong>Required Machine:</strong> @Model.Machine?.MachineName</div>
+    <div class="mb-2"><strong>Next Step:</strong> @Model.NextStep</div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>

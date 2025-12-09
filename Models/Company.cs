@@ -33,7 +33,7 @@ namespace AspnetCoreMvcFull.Models
     [StringLength(50)]
     public string? CreatedBy { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime? CreatedAt { get; set; } = DateTime.Now;
 
     [StringLength(50)]
     public string? UpdatedBy { get; set; }

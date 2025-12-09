@@ -1,0 +1,68 @@
+@model AspnetCoreMvcFull.Models.WorkFlow
+
+<div class="modal-header">
+    <h5 class="modal-title">@((Model.ID == 0) ? "Create Workflow" : "Edit Workflow")</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <form id="workflowForm">
+        @Html.AntiForgeryToken() <!-- MUST be inside the form -->
+
+        <input type="hidden" asp-for="ID" />
+
+        <div class="mb-3">
+            <label>Process Name</label>
+            <input type="text" class="form-control" asp-for="ProcessName" required />
+        </div>
+
+        <div class="mb-3">
+            <label>Description</label>
+            <textarea class="form-control" asp-for="Description" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label>Required Machine</label>
+            <select class="form-control" asp-for="RequiredMachine" asp-items="ViewBag.Machines" required>
+                <option value="">-- Select Machine --</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-success" id="saveWorkflow">Save</button>
+</div>
+
+<script>
+       $('#saveWorkflow').click(function () {
+        var form = $('#workflowForm');
+        var token = $('input[name="__RequestVerificationToken"]', form).val();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("CreateOrEdit")',
+            data: form.serialize(),
+            headers: {
+                'RequestVerificationToken': token
+            },
+            success: function(res) {
+                if (res.success) {
+                    $('#workflowModal').modal('hide');
+                    location.reload();
+                } else {
+                    $('#modalContent').html(res);
+                }
+            },
+            error: function(xhr) {
+                // Display actual server error
+                $('#modalContent').html(
+                    '<div class="alert alert-danger"><strong>Error:</strong><br/>' +
+                    xhr.responseText +
+                    '</div>'
+                );
+            }
+        });
+    });
+</script>

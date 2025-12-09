@@ -8,32 +8,28 @@
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="ID" />
 
-            <!-- MACHINE -->
+            <!-- MACHINE - NOW WITH SELECT2 -->
             <div class="mb-3">
                 <label class="form-label">Select Machine</label>
-                <div class="input-group">
-                    <input type="text" id="MachineDisplay" class="form-control" placeholder="Choose machine" readonly
-                           value="@Model.Machine?.MachineName" />
-                    <input type="hidden" asp-for="MachineID" id="MachineID" />
-                    <button type="button" class="btn btn-success" id="chooseMachineBtn">Choose</button>
-                </div>
+                <select asp-for="MachineID" class="form-control" id="machineSelect" required>
+                    <option value="">-- Select Machine --</option>
+                </select>
             </div>
 
-            <!-- PROJECT -->
+            <!-- PROJECT - NOW WITH SELECT2 -->
             <div class="mb-3">
                 <label class="form-label">Select Project</label>
-                <div class="input-group">
-                    <input type="text" id="ProjectDisplay" class="form-control" placeholder="Choose project" readonly
-                           value="@Model.Project?.ProjectName" />
-                    <input type="hidden" asp-for="ProjectID" id="ProjectID" />
-                    <button type="button" class="btn btn-success" id="chooseProjectBtn">Choose</button>
-                </div>
+                <select asp-for="ProjectID" class="form-control" id="projectSelect" required>
+                    <option value="">-- Select Project --</option>
+                </select>
             </div>
 
-            <!-- USER -->
+            <!-- USER - SEARCHABLE DROPDOWN -->
             <div class="mb-3">
-                <label asp-for="UserID" class="form-label">User ID</label>
-                <input asp-for="UserID" class="form-control" required />
+                <label asp-for="UserID" class="form-label">User</label>
+                <select asp-for="UserID" class="form-control" id="userSelect" required>
+                    <option value="">-- Select User --</option>
+                </select>
             </div>
 
             <!-- DATE -->
@@ -51,76 +47,138 @@
     </div>
 </div>
 
-<!-- MACHINE Modal -->
-<div class="modal fade" id="machineModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content"></div>
-    </div>
-</div>
+<script>
+    $(document).ready(function () {
 
-<!-- PROJECT Modal -->
-<div class="modal fade" id="projectModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content"></div>
-    </div>
-</div>
+        // -----------------------------
+        // 1️⃣ Initialize Select2 for Machines
+        // -----------------------------
+        function initMachineSelect() {
+            var select = $('#machineSelect');
+            if (!select.length) return;
 
-@section Scripts {
-    <script>
-        $(document).ready(function () {
+            $.get('/MachineAllocation/GetMachines', function (machines) {
+                select.empty().append(new Option('-- Select Machine --', '', false, false));
 
-            // Open Machine Modal
-            $('#chooseMachineBtn').click(function () {
-                $.get('/MachineAllocation/MachineList', function (data) {
-                    $('#machineModal .modal-content').html(data);
-                    $('#machineModal').modal('show');
+                machines.forEach(function (machine) {
+                    var optionText = machine.name + ' - ' + machine.purpose;
+                    select.append(new Option(optionText, machine.id, false, false));
+                });
+
+                let selectedMachine = '@Model.MachineID';
+                if (selectedMachine) {
+                    select.val(selectedMachine);
+                }
+
+                select.select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '-- Select Machine --',
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#createAllocationModal')
                 });
             });
+        }
 
-            // Open Project Modal
-            $('#chooseProjectBtn').click(function () {
-                $.get('/MachineAllocation/ProjectList', function (data) {
-                    $('#projectModal .modal-content').html(data);
-                    $('#projectModal').modal('show');
+        // -----------------------------
+        // 2️⃣ Initialize Select2 for Projects
+        // -----------------------------
+        function initProjectSelect() {
+            var select = $('#projectSelect');
+            if (!select.length) return;
+
+            $.get('/MachineAllocation/GetProjects', function (projects) {
+                select.empty().append(new Option('-- Select Project --', '', false, false));
+
+                projects.forEach(function (project) {
+                    var optionText = project.name + ' (' + project.company + ')';
+                    select.append(new Option(optionText, project.id, false, false));
+                });
+
+                let selectedProject = '@Model.ProjectID';
+                if (selectedProject) {
+                    select.val(selectedProject);
+                }
+
+                select.select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '-- Select Project --',
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#createAllocationModal')
                 });
             });
+        }
 
-            // AJAX Save (Create or Edit)
-            $('#allocationForm').submit(function (e) {
-                e.preventDefault();
-                var form = $(this);
+        // -----------------------------
+        // 3️⃣ Initialize Select2 for Users
+        // -----------------------------
+        function initUserSelect() {
+            var select = $('#userSelect');
+            if (!select.length) return;
 
-                var url = '@(Model.ID == 0 ? Url.Action("CreateAllocation") : Url.Action("EditAllocation"))';
+            $.get('/MachineAllocation/GetUsers', function (users) {
+                select.empty().append(new Option('-- Select User --', '', false, false));
 
-                $.ajax({
-                    type: 'POST',
-                    url: url,
-                    data: form.serialize(),
-                    success: function (response) {
-                        if (response.success) {
-                            alert(response.message);
-                            $('#allocationModal').modal('hide');
-                            location.reload();
-                        } else {
-                            $('#allocationModal .modal-content').html(response);
-                        }
+                users.forEach(function (user) {
+                    select.append(new Option(user.name, user.id, false, false));
+                });
+
+                let selectedUser = '@Model.UserID';
+                if (selectedUser) {
+                    select.val(selectedUser);
+                }
+
+                select.select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '-- Select User --',
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#createAllocationModal')
+                });
+            });
+        }
+
+        // Initialize all dropdowns
+        initMachineSelect();
+        initProjectSelect();
+        initUserSelect();
+
+        // -----------------------------
+        // 4️⃣ AJAX Save Create/Edit
+        // -----------------------------
+        $('#allocationForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var form = $(this);
+            var url = '@(Model.ID == 0 ? Url.Action("CreateAllocation") : Url.Action("EditAllocation"))';
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: form.serialize(),
+
+                success: function (response) {
+                    if (response.success) {
+                        $('#createAllocationModal').modal('hide');
+
+                        $('<div class="alert alert-success alert-dismissible fade show mt-2" role="alert">' +
+                            response.message +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                            '</div>').prependTo('.card');
+
+                        // Reload the entire page to refresh the table
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        $('#createAllocationModal .modal-content').html(response);
                     }
-                });
+                },
+                error: function() {
+                    alert('An error occurred. Please try again.');
+                }
             });
         });
-
-        // Set selected machine
-        function selectMachine(id, name) {
-            $('#MachineID').val(id);
-            $('#MachineDisplay').val(name);
-            $('#machineModal').modal('hide');
-        }
-
-        // Set selected project
-        function selectProject(id, name) {
-            $('#ProjectID').val(id);
-            $('#ProjectDisplay').val(name);
-            $('#projectModal').modal('hide');
-        }
-    </script>
-}
+    });
+</script>

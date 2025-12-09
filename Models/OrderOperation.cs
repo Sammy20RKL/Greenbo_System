@@ -31,8 +31,11 @@ namespace AspnetCoreMvcFull.Models
     [ForeignKey("ProjectID")]
     public virtual Project? Project { get; set; }
 
-    //  [ForeignKey("PartNumbe")]
-    //  public virtual MaterialList? MaterialList { get; set; }
-    //}
+    //[ForeignKey("ID")]
+    //public virtual MaterialList? MaterialList { get; set; }
+    //  public virtual Project? Projects { get; set; }
+    //public virtual WorkFlow? WorkFlow { get; set; }  // Add this line
+    //public virtual User? User { get; set; }
   }
 }
+

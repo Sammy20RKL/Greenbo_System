@@ -1,0 +1,137 @@
+@model AspnetCoreMvcFull.Models.Company
+@{
+    ViewData["Title"] = "Edit Customer";
+    var projects = Model.Projects?.ToList() ?? new List<AspnetCoreMvcFull.Models.Project>();
+}
+
+
+<h3>Edit Customer</h3>
+
+<form asp-action="EditCompany" asp-controller="Company" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="ID" />
+
+    <div class="card p-4 mb-4">
+        <h5>Customer Information</h5>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Company Name</label>
+                <input asp-for="CompanyName" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Registration Number</label>
+                <input asp-for="RegistrationNumber" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">KRA PIN</label>
+                <input asp-for="KraPin" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Phone Number</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select asp-for="Status" class="form-select">
+                    <option value="true" selected="@Model.Status == true">Active</option>
+                    <option value="false" selected="@Model.Status == false">Inactive</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <h5>Projects</h5>
+        <table class="table table-bordered" id="projectsTable">
+            <thead class="table-header-green">
+                <tr>
+                    <th>Project Name</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>File</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < projects.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <input name="Projects[@i].ProjectName" value="@projects[i].ProjectName" class="form-control" />
+                            <input type="hidden" name="Projects[@i].ID" value="@projects[i].ID" />
+                            <input type="hidden" name="Projects[@i].FileUploadExisting" value="@projects[i].FileUpload" />
+                        </td>
+                        <td>
+                            <input type="number" name="Projects[@i].Quantity" value="@projects[i].Quantity" class="form-control" />
+                        </td>
+                        <td>
+                            <select name="Projects[@i].Status" class="form-select">
+                                
+                            </select>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(projects[i].FileUpload))
+                            {
+                                <a href="@projects[i].FileUpload" target="_blank" class="btn btn-sm btn-outline-primary">Download</a>
+                            }
+                            <input type="file" name="Projects[@i].FileUpload" class="form-control mt-1" />
+                        </td>
+                        <td class="text-center">
+                            <input type="checkbox" name="Projects[@i].MarkedForDelete" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="d-flex align-items-center mb-2">
+            <button type="button" class="btn btn-success btn-sm me-2" onclick="addRow()">➕ Add Project</button>
+        </div>
+
+    </div>
+    <div class="d-flex justify-content-center mt-3 gap-3">
+    <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+    <a asp-action="CompanyInformation" class="btn btn-secondary mt-3">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+    function addRow() {
+        const table = document.querySelector("#projectsTable tbody");
+        const index = table.rows.length;
+
+        const row = `
+        <tr>
+            <td>
+                <input name="Projects[${index}].ProjectName" class="form-control" />
+                <input type="hidden" name="Projects[${index}].ID" value="0" />
+                <input type="hidden" name="Projects[${index}].FileUploadExisting" value="" />
+            </td>
+            <td><input type="number" name="Projects[${index}].Quantity" class="form-control" /></td>
+            <td>
+                <select name="Projects[${index}].Status" class="form-select">
+                    <option>New</option>
+                    <option>Pending</option>
+                    <option>Approved</option>
+                </select>
+            </td>
+            <td><input type="file" name="Projects[${index}].FileUpload" class="form-control" /></td>
+            <td class="text-center"><input type="checkbox" name="Projects[${index}].MarkedForDelete" /></td>
+        </tr>
+        `;
+
+        table.insertAdjacentHTML("beforeend", row);
+    }
+</script>
+}
+
+<style>
+    .table-header-green th {
+        background-color: #198754 !important; 
+        color: #ffffff !important; 
+    }
+</style>
+

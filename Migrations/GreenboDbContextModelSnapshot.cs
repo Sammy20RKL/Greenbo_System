@@ -38,7 +38,7 @@ namespace AspnetCoreMvcFull.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
@@ -80,6 +80,73 @@ namespace AspnetCoreMvcFull.Migrations
                     b.ToTable("Companies", (string)null);
                 });
 
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.MachineAllocation", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<DateTime>("Datex")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("MachineID")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ProjectID")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("UserID")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("MachineID");
+
+                    b.HasIndex("ProjectID");
+
+                    b.ToTable("MachineAllocation", (string)null);
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.MachineRegistration", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MachineManufacturer")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("MachineName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("MachinePurpose")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("MachineStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("MachineRegistration", (string)null);
+                });
+
             modelBuilder.Entity("AspnetCoreMvcFull.Models.MaterialList", b =>
                 {
                     b.Property<long>("ID")
@@ -92,25 +159,21 @@ namespace AspnetCoreMvcFull.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Length")
                         .HasColumnType("int");
 
                     b.Property<string>("Mark")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("PartNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("Profile")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("ProjectID")
@@ -120,16 +183,17 @@ namespace AspnetCoreMvcFull.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("TotalWeight")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal?>("UnitWeight")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
@@ -137,6 +201,43 @@ namespace AspnetCoreMvcFull.Migrations
                     b.HasIndex("ProjectID");
 
                     b.ToTable("MaterialList", (string)null);
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.OrderOperation", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<int?>("AssignedTo")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PartNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Process")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("ProjectID")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("ProjectID");
+
+                    b.ToTable("OrderOperations", (string)null);
                 });
 
             modelBuilder.Entity("AspnetCoreMvcFull.Models.Project", b =>
@@ -150,7 +251,7 @@ namespace AspnetCoreMvcFull.Migrations
                     b.Property<long?>("CompanyID")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
@@ -168,7 +269,6 @@ namespace AspnetCoreMvcFull.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
@@ -219,7 +319,145 @@ namespace AspnetCoreMvcFull.Migrations
                     b.ToTable("ProjectDesign", (string)null);
                 });
 
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.User", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.WorkFlow", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<long>("NextStep")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProcessName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long?>("RequiredMachine")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("RequiredMachine");
+
+                    b.ToTable("WorkFlow", (string)null);
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.WorkOrderStepEffort", b =>
+                {
+                    b.Property<long>("EffortId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("EffortId"));
+
+                    b.Property<int?>("ActualDuration")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("Efficiency")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ExpectedDuration")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("MachineEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("MachineId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("MachineStartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("OperationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("OperatorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("QuantityAssigned")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("QuantityCompleted")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StandardTimePerUnit")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UnitOfMeasure")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("EffortId");
+
+                    b.HasIndex("MachineId");
+
+                    b.HasIndex("OperationId");
+
+                    b.ToTable("WorkOrderStepEffort", (string)null);
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.MachineAllocation", b =>
+                {
+                    b.HasOne("AspnetCoreMvcFull.Models.MachineRegistration", "Machine")
+                        .WithMany()
+                        .HasForeignKey("MachineID");
+
+                    b.HasOne("AspnetCoreMvcFull.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectID");
+
+                    b.Navigation("Machine");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("AspnetCoreMvcFull.Models.MaterialList", b =>
+                {
+                    b.HasOne("AspnetCoreMvcFull.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectID");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.OrderOperation", b =>
                 {
                     b.HasOne("AspnetCoreMvcFull.Models.Project", "Project")
                         .WithMany()
@@ -246,6 +484,32 @@ namespace AspnetCoreMvcFull.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.WorkFlow", b =>
+                {
+                    b.HasOne("AspnetCoreMvcFull.Models.MachineRegistration", "Machine")
+                        .WithMany()
+                        .HasForeignKey("RequiredMachine");
+
+                    b.Navigation("Machine");
+                });
+
+            modelBuilder.Entity("AspnetCoreMvcFull.Models.WorkOrderStepEffort", b =>
+                {
+                    b.HasOne("AspnetCoreMvcFull.Models.MachineRegistration", "Machine")
+                        .WithMany()
+                        .HasForeignKey("MachineId");
+
+                    b.HasOne("AspnetCoreMvcFull.Models.OrderOperation", "OrderOperation")
+                        .WithMany()
+                        .HasForeignKey("OperationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Machine");
+
+                    b.Navigation("OrderOperation");
                 });
 
             modelBuilder.Entity("AspnetCoreMvcFull.Models.Company", b =>

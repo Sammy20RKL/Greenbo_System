@@ -14,12 +14,13 @@ namespace AspnetCoreMvcFull.Models
 
     public int? PartNumber { get; set; }
 
+  
     public string? Description { get; set; }
 
     public string? Mark { get; set; }
 
     public string? Profile { get; set; }
-
+    
     public int? Quantity { get; set; }
 
     public int? Length { get; set; }

@@ -121,8 +121,45 @@ namespace AspnetCoreMvcFull.Controllers
 
     public IActionResult ProjectList()
     {
-      var projects = _context.Projects.ToList();
+      var projects = _context.Projects
+          .Include(p => p.Company) // Include company for displaying company name
+          .ToList();
       return PartialView("ProjectList", projects);
+    }
+    [HttpGet]
+    public IActionResult GetUsers()
+    {
+      var users = _context.Users
+          .Select(u => new { id = u.ID.ToString(), name = u.Name })
+          .ToList();
+      return Json(users);
+    }
+    [HttpGet]
+    public IActionResult GetMachines()
+    {
+      var machines = _context.MachineRegistrations
+          .Select(m => new {
+            id = m.ID.ToString(),
+            name = m.MachineName,
+            purpose = m.MachinePurpose ?? "N/A"
+          })
+          .ToList();
+      return Json(machines);
+    }
+
+    [HttpGet]
+    public IActionResult GetProjects()
+    {
+      var projects = _context.Projects
+          .Include(p => p.Company)
+          .Select(p => new {
+            id = p.ID.ToString(),
+            name = p.ProjectName,
+            company = p.Company != null ? p.Company.CompanyName : "N/A",
+            quantity = p.Quantity
+          })
+          .ToList();
+      return Json(projects);
     }
 
   }

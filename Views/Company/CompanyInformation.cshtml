@@ -68,12 +68,14 @@
                     <td>@item.Designation</td>
                     <td>@item.PhoneNumber</td>
                     <td>@item.Status</td>
-                    <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>@item.CreatedAt?.ToString("yyyy-MM-dd")</td>
 
                     <td>
                         <div class="d-flex justify-content-center gap-2">
                             <a asp-action="View" asp-controller="Company" asp-route-id="@item.ID"
                                class="btn btn-primary btn-sm">View</a>
+                            <a asp-action="EditCompany" asp-controller="Company" asp-route-id="@item.ID"
+                               class="btn btn-warning btn-sm">✎ Edit</a>
 
                             <a asp-action="Delete" asp-controller="Company" asp-route-id="@item.ID"
                                class="btn btn-danger btn-sm">Delete</a>

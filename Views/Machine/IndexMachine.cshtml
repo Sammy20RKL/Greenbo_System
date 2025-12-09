@@ -21,6 +21,7 @@
         <div class="alert alert-success">@TempData["Success"]</div>
     }
 
+
     <table class="table table-bordered table-sm">
         <thead class="table-dark">
             <tr>
@@ -108,18 +109,26 @@
                 });
             });
             //optional: AJAX form submit for edit
-            $(document).on('submit', '#editMachineForm', function (e) {
-                e.preventDefault();
-                var form = $(this);
-                $.post(form.attr('action'), form.serialize(), function (data) {
-                    if (data.success) {
-                        $('#editMachineModal').modal('hide');
-                        location.reload();
-                    } else {
-                        $('#editMachineModal .modal-content').html(data);
-                    }
-                });
+        $(document).on('submit', '#editMachineForm', function (e) {
+            e.preventDefault();
+            var form = $(this);
+            $.post(form.attr('action'), form.serialize(), function (data) {
+                if (data.success) {
+                    $('#editMachineModal').modal('hide');
+
+                    // Show success alert dynamically
+                    $('<div class="alert alert-success alert-dismissible fade show mt-2">' +
+                        data.message +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                      '</div>').prependTo('.card');
+
+                    location.reload(); // optional, if you want table to update
+                } else {
+                    $('#editMachineModal .modal-content').html(data);
+                }
             });
+        });
+
         });
     </script>
 }

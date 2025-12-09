@@ -1,42 +1,68 @@
 @model AspnetCoreMvcFull.Models.OrderOperation
 
-
 <h3>Create Order Operation</h3>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
 <div class="card p-4 shadow-sm rounded-4 bg-white">
-    <form asp-action="Create" method="post">
+    <form asp-action="CreateOrderOperation" method="post">
 
         <!-- PROJECT SELECTION -->
         <div class="mb-3">
             <label>Project</label>
             <div class="input-group">
-                <input asp-for="ProjectID" class="form-control" id="projectField" readonly placeholder="Click to select project" />
+                <input type="text" class="form-control" id="projectField" readonly placeholder="Click to select project" />
                 <button type="button" class="btn btn-secondary" id="btnProjectModal">Select</button>
             </div>
+            <input asp-for="ProjectID" type="hidden" />
         </div>
 
         <!-- PART SELECTION -->
         <div class="mb-3">
             <label>Part Number</label>
             <div class="input-group">
-                <input asp-for="PartNumber" class="form-control" id="partField" readonly placeholder="Click to select part" />
+                <input type="text" class="form-control" id="partField" readonly placeholder="Click to select part" />
                 <button type="button" class="btn btn-secondary" id="btnPartModal">Select</button>
             </div>
+            <input asp-for="PartNumber" type="hidden" />
         </div>
 
-        <!-- PROCESS -->
+        <!-- PROCESS SELECTION -->
         <div class="mb-3">
             <label>Process</label>
-            <input asp-for="Process" class="form-control" required />
+            <div class="input-group">
+                <input type="text" class="form-control" id="processField" readonly placeholder="Click to select process" />
+                <button type="button" class="btn btn-secondary" id="btnProcessModal">Select</button>
+            </div>
+            <input asp-for="Process" type="hidden" />
         </div>
 
         <!-- ASSIGNED TO -->
         <div class="mb-3">
             <label>Assigned To</label>
-            <input asp-for="AssignedTo" class="form-control" required />
+            <select asp-for="AssignedTo" class="form-control" asp-items="ViewBag.Users" required>
+                <option value="">-- Select User --</option>
+            </select>
         </div>
 
-        <button type="submit" class="btn btn-success">Save</button>
+        <div class="d-flex justify-content-center">
+            <a asp-action="IndexOrderOperation" class="btn btn-secondary">Back</a>
+            <button type="submit" class="btn btn-success">Save</button>
+        </div>
+
     </form>
 </div>
 
@@ -44,7 +70,7 @@
 <div class="modal fade" id="projectModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content p-3">
-            <h5>Select Project</h5>
+            <h5>Select Project <button type="button" class="btn-close float-end" data-bs-dismiss="modal"></button></h5>
             <table class="table table-bordered" id="projectTable">
                 <thead class="bg-success text-white">
                     <tr>
@@ -57,7 +83,6 @@
                 </thead>
                 <tbody></tbody>
             </table>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
     </div>
 </div>
@@ -66,7 +91,7 @@
 <div class="modal fade" id="partModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content p-3">
-            <h5>Select Part</h5>
+            <h5>Select Part <button type="button" class="btn-close float-end" data-bs-dismiss="modal"></button></h5>
             <table class="table table-bordered" id="partTable">
                 <thead class="bg-success text-white">
                     <tr>
@@ -77,67 +102,103 @@
                 </thead>
                 <tbody></tbody>
             </table>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- PROCESS MODAL -->
+<div class="modal fade" id="processModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content p-3">
+            <h5>Select Process <button type="button" class="btn-close float-end" data-bs-dismiss="modal"></button></h5>
+            <table class="table table-bordered" id="processTable">
+                <thead class="bg-success text-white">
+                    <tr>
+                        <th>ID</th>
+                        <th>Process Name</th>
+                        <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        $(function() {
-            // Open project modal and load table
-            $("#btnProjectModal, #projectField").click(function() {
-                $.get("/OrderOperation/GetProjects", function(data) {
+        $(function () {
+            // Project modal
+            $("#btnProjectModal, #projectField").click(function () {
+                $.get("/OrderOperation/GetProjects", function (data) {
                     var tbody = $("#projectTable tbody");
                     tbody.empty();
-                    data.forEach(function(p) {
+                    data.forEach(function (p) {
                         tbody.append(`<tr>
-                            <td>${p.ID}</td>
-                            <td>${p.ProjectName}</td>
-                            <td>${p.CompanyID}</td>
-                            <td>${p.Status}</td>
-                            <td><button class="btn btn-primary selectProject" data-id="${p.ID}">Select</button></td>
+                            <td>${p.id}</td>
+                            <td>${p.projectName}</td>
+                            <td>${p.companyID}</td>
+                            <td>${p.status}</td>
+                            <td><button class="btn btn-primary selectProject" data-id="${p.id}" data-name="${p.projectName}">Select</button></td>
                         </tr>`);
                     });
                     $("#projectModal").modal("show");
                 });
             });
 
-            // Select project
-            $(document).on("click", ".selectProject", function() {
-                var projectId = $(this).data("id");
-                $("#projectField").val(projectId);
+            $(document).on("click", ".selectProject", function () {
+                $("#ProjectID").val($(this).data("id"));
+                $("#projectField").val($(this).data("name"));
                 $("#projectModal").modal("hide");
-                $("#partField").val(''); // clear part
+                $("#partField").val("");
+                $("#PartNumber").val("");
             });
 
-            // Open part modal and load parts for selected project
-            $("#btnPartModal, #partField").click(function() {
-                var projectId = $("#projectField").val();
-                if (!projectId) {
-                    alert("Please select a project first!");
-                    return;
-                }
+            // Part modal
+            $("#btnPartModal, #partField").click(function () {
+                var projectId = $("#ProjectID").val();
+                if (!projectId) { alert("Please select a project first!"); return; }
 
-                $.get("/OrderOperation/GetParts?projectId=" + projectId, function(data) {
+                $.get("/OrderOperation/GetParts?projectId=" + projectId, function (data) {
                     var tbody = $("#partTable tbody");
                     tbody.empty();
-                    data.forEach(function(p) {
+                    data.forEach(function (p) {
                         tbody.append(`<tr>
-                            <td>${p.PartNumber}</td>
-                            <td>${p.Description}</td>
-                            <td><button class="btn btn-primary selectPart" data-number="${p.PartNumber}">Select</button></td>
+                            <td>${p.partNumber}</td>
+                            <td>${p.description}</td>
+                            <td><button class="btn btn-primary selectPart" data-id="${p.id}" data-number="${p.partNumber}" data-desc="${p.description}">Select</button></td>
                         </tr>`);
                     });
                     $("#partModal").modal("show");
                 });
             });
 
-            // Select part
-            $(document).on("click", ".selectPart", function() {
-                var partNumber = $(this).data("number");
-                $("#partField").val(partNumber);
+            $(document).on("click", ".selectPart", function () {
+                $("#PartNumber").val($(this).data("id"));
+                $("#partField").val($(this).data("desc"));
                 $("#partModal").modal("hide");
+            });
+
+            // Process modal
+            $("#btnProcessModal, #processField").click(function () {
+                $.get("/OrderOperation/GetProcesses", function (data) {
+                    var tbody = $("#processTable tbody");
+                    tbody.empty();
+                    data.forEach(function (p) {
+                        tbody.append(`<tr>
+                            <td>${p.id}</td>
+                            <td>${p.processName}</td>
+                            <td><button class="btn btn-primary selectProcess" data-id="${p.id}" data-name="${p.processName}">Select</button></td>
+                        </tr>`);
+                    });
+                    $("#processModal").modal("show");
+                });
+            });
+
+            $(document).on("click", ".selectProcess", function () {
+                $("#Process").val($(this).data("id"));
+                $("#processField").val($(this).data("name"));
+                $("#processModal").modal("hide");
             });
         });
     </script>

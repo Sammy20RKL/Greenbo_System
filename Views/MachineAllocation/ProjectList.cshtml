@@ -1,27 +1,54 @@
 @model IEnumerable<AspnetCoreMvcFull.Models.Project>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Project Name</th>
-            <th>Client</th>
-            <th>Select</th>
-        </tr>
-    </thead>
+<div class="modal-header">
+    <h5 class="modal-title">Select Project</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="mb-3">
+        <input type="text" id="projectSearchInput" class="form-control" placeholder="🔍 Search projects..." />
+    </div>
+    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+        <table class="table table-hover">
+            <thead class="table-light sticky-top">
+                <tr>
+                    <th>Company Name</th>
+                    <th>Project Name</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody id="projectTableBody">
+                @foreach (var project in Model)
+                {
+                    <tr class="project-row" style="cursor: pointer;"
+                        data-id="@project.ID"
+                        data-name="@project.ProjectName"
+                        onclick="selectProject(@project.ID, '@project.ProjectName')">
+                        <td>@(project.Company?.CompanyName ?? "N/A")</td>
+                        <td>@project.ProjectName</td>
+                        <td>@project.Quantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>@p.ProjectName</td>
-                <td>@p.CompanyID</td>
-                <td>
-                    <button class="btn btn-success"
-                            onclick="selectProject(@p.ID, '@p.ProjectName')">
-                        Select
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<script>
+    $(document).ready(function() {
+        // Real-time search functionality
+        $('#projectSearchInput').on('keyup', function() {
+            var searchValue = $(this).val().toLowerCase();
+
+            $('#projectTableBody tr').filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(searchValue) > -1);
+            });
+        });
+
+        // Highlight row on hover
+        $('.project-row').hover(
+            function() { $(this).addClass('table-active'); },
+            function() { $(this).removeClass('table-active'); }
+        );
+    });
+</script>

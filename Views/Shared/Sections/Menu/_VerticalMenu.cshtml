@@ -131,7 +131,7 @@
             </li>
             @* Order Operation *@
 
-              <li class='menu-item@(currentPage.StartsWith("/OrderOperation") || currentPage.Contains("SalesOrderLines") ? " active open" : "")'>
+              <li class='menu-item@(currentPage.StartsWith("/OrderOperation") || currentPage.Contains("WorkFlows") || currentPage.Contains("WorkOrderStep") ? " active open" : "")'>
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base bx bx-cart"></i>
                 <div class="text-truncate">Order Management</div>
@@ -140,6 +140,22 @@
                 <li class='menu-item@(currentPage == "/OrderOperation/IndexOrderOperation" ? " active" : "")'>
                     <a asp-controller="OrderOperation" asp-action="IndexOrderOperation" class="menu-link">
                         <div class="text-truncate">Order Operation</div>
+                    </a>
+                </li>
+
+            </ul>
+            <ul class="menu-sub">
+                <li class='menu-item@(currentPage == "/WorkFlows/IndexWorkflow" ? " active" : "")'>
+                    <a asp-controller="WorkFlows" asp-action="IndexWorkflow" class="menu-link">
+                        <div class="text-truncate">WorkFlow</div>
+                    </a>
+                </li>
+
+            </ul>
+            <ul class="menu-sub">
+                <li class='menu-item@(currentPage == "/WorkOrderStep/IndexStep" ? " active" : "")'>
+                    <a asp-controller="WorkOrderStep" asp-action="IndexStep" class="menu-link">
+                        <div class="text-truncate">Work Order Steps</div>
                     </a>
                 </li>
 

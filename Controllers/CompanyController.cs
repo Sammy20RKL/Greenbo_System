@@ -1,10 +1,11 @@
 using AspnetCoreMvcFull.Data;
 using AspnetCoreMvcFull.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace AspnetCoreMvcFull.Controllers
 {
@@ -330,18 +331,212 @@ namespace AspnetCoreMvcFull.Controllers
     public IActionResult Delete(long id)
     {
       var company = _context.Companies.FirstOrDefault(c => c.ID == id);
+
       if (company != null)
       {
-        var projects = _context.Projects.Where(p => p.CompanyID == company.ID).ToList();
-        _context.Projects.RemoveRange(projects);
+        try
+        {
+          // Get all projects for this company
+          var projects = _context.Projects
+                                 .Where(p => p.CompanyID == company.ID)
+                                 .ToList();
 
-        _context.Companies.Remove(company);
-        _context.SaveChanges();
+          foreach (var project in projects)
+          {
+            // 1. Delete ProjectDesign rows
+            var designs = _context.ProjectDesigns
+                                  .Where(d => d.ProjectID == project.ID)
+                                  .ToList();
+            _context.ProjectDesigns.RemoveRange(designs);
 
-        TempData["Success"] = $"Company '{company.CompanyName}' deleted successfully.";
+            // 2. Delete MaterialList rows
+            var materials = _context.MaterialLists
+                                    .Where(m => m.ProjectID == project.ID)
+                                    .ToList();
+            _context.MaterialLists.RemoveRange(materials);
+
+          
+          }
+
+          // 3. Delete the projects
+          _context.Projects.RemoveRange(projects);
+
+          // 4. Delete the company
+          _context.Companies.Remove(company);
+
+          _context.SaveChanges();
+
+          TempData["Success"] = $"Company '{company.CompanyName}' deleted successfully.";
+        }
+        catch (DbUpdateException ex)
+        {
+          TempData["Error"] = ex.InnerException?.Message;
+          return RedirectToAction("CreateCompany");
+        }
       }
 
       return RedirectToAction("CompanyInformation");
     }
+    [HttpGet]
+    public IActionResult EditCompany(long id)
+    {
+      var company = _context.Companies
+          .Include(c => c.Projects)
+          .FirstOrDefault(c => c.ID == id);
+
+      if (company == null) return NotFound();
+
+      return View(company);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult EditCompany(Company model, List<IFormFile> projectFiles)
+    {
+      try
+      {
+        // Load company and existing projects from DB
+        var company = _context.Companies
+            .Include(c => c.Projects)
+            .FirstOrDefault(c => c.ID == model.ID);
+
+        if (company == null) return NotFound();
+
+        // Update company fields
+        company.CompanyName = model.CompanyName;
+        company.RegistrationNumber = model.RegistrationNumber;
+        company.KraPin = model.KraPin;
+        company.ContactAddress = model.ContactAddress;
+        company.Designation = model.Designation;
+        company.PhoneNumber = model.PhoneNumber;
+        company.Email = model.Email;
+        company.Status = model.Status;
+        company.UpdatedAt = DateTime.Now;
+        company.UpdatedBy = User.Identity?.Name ?? "System";
+
+        // Update existing projects and delete marked ones
+        for (int i = 0; i < company.Projects.Count; i++)
+        {
+          var p = company.Projects.ElementAt(i);
+
+          // Check if this project was marked for deletion (via checkbox)
+          var formKeyDelete = $"Projects[{i}].MarkedForDelete";
+          var isDelete = Request.Form[formKeyDelete].FirstOrDefault() == "on";
+
+          if (isDelete)
+          {
+            // Delete related ProjectDesigns
+            var designs = _context.ProjectDesigns.Where(d => d.ProjectID == p.ID).ToList();
+            _context.ProjectDesigns.RemoveRange(designs);
+
+            // Delete related MaterialLists
+            var materials = _context.MaterialLists.Where(m => m.ProjectID == p.ID).ToList();
+            _context.MaterialLists.RemoveRange(materials);
+
+            // Delete old file
+            if (!string.IsNullOrEmpty(p.FileUpload))
+            {
+              var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", p.FileUpload.TrimStart('/'));
+              if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+            }
+
+            _context.Projects.Remove(p);
+          }
+          else
+          {
+            // Update project fields
+            var formKeyName = $"Projects[{i}].ProjectName";
+            var formKeyQty = $"Projects[{i}].Quantity";
+            var formKeyStatus = $"Projects[{i}].Status";
+
+            p.ProjectName = Request.Form[formKeyName];
+            p.Quantity = int.TryParse(Request.Form[formKeyQty], out int q) ? q : 0;
+            p.Status = Request.Form[formKeyStatus];
+            p.UpdatedAt = DateTime.Now;
+            p.UpdatedBy = User.Identity?.Name ?? "System";
+
+            // Handle uploaded file
+            var file = projectFiles.ElementAtOrDefault(i);
+            if (file != null && file.Length > 0)
+            {
+              var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/projects");
+              if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+              var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+              var filePath = Path.Combine(folder, fileName);
+
+              using (var stream = new FileStream(filePath, FileMode.Create))
+                file.CopyTo(stream);
+
+              // Delete old file
+              if (!string.IsNullOrEmpty(p.FileUpload))
+              {
+                var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", p.FileUpload.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+              }
+
+              p.FileUpload = $"/uploads/projects/{fileName}";
+            }
+
+            _context.Projects.Update(p);
+          }
+        }
+
+        // Handle new projects added dynamically
+        var newProjectsCount = Request.Form.Keys
+            .Count(k => k.StartsWith("Projects[") && k.Contains("].ProjectName") && !string.IsNullOrEmpty(Request.Form[k]));
+
+        for (int i = company.Projects.Count; i < company.Projects.Count + newProjectsCount; i++)
+        {
+          var projectName = Request.Form[$"Projects[{i}].ProjectName"];
+          var quantityStr = Request.Form[$"Projects[{i}].Quantity"];
+          var status = Request.Form[$"Projects[{i}].Status"];
+
+          if (string.IsNullOrWhiteSpace(projectName)) continue;
+
+          var newProject = new Project
+          {
+            CompanyID = company.ID,
+            ProjectName = projectName,
+            Quantity = int.TryParse(quantityStr, out int q) ? q : 0,
+            Status = status,
+            CreatedAt = DateTime.Now,
+            CreatedBy = User.Identity?.Name ?? "System"
+          };
+
+          // Handle file for new project
+          var file = projectFiles.ElementAtOrDefault(i);
+          if (file != null && file.Length > 0)
+          {
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/projects");
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(folder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+              file.CopyTo(stream);
+
+            newProject.FileUpload = $"/uploads/projects/{fileName}";
+          }
+
+          _context.Projects.Add(newProject);
+        }
+
+        _context.SaveChanges();
+        TempData["Success"] = "Company and projects updated successfully!";
+        return RedirectToAction("CompanyInformation");
+      }
+      catch (Exception ex)
+      {
+        TempData["Error"] = ex.Message;
+        return View(model);
+      }
+    }
+
+
+
+
+
   }
 }

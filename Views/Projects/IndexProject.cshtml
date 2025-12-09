@@ -42,7 +42,7 @@
                                 @project.Status
                             </span>
                         </td>
-                        <td>@project.CreatedAt.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                        <td>@project.CreatedAt?.ToString("dd-MMM-yyyy hh:mm tt")</td>
                     </tr>
                 }
             }

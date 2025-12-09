@@ -163,7 +163,7 @@
                                     <span class="text-muted">No file</span>
                                 }
                             </td>
-                            <td>@(project.CreatedAt.ToString("dd-MMM-yyyy") ?? "-")</td>
+                            <td>@(project.CreatedAt?.ToString("dd-MMM-yyyy") ?? "-")</td>
                             <td class="text-center">
                                 <a asp-controller="ProjectDesign"
                                    asp-action="CreateFromProject"

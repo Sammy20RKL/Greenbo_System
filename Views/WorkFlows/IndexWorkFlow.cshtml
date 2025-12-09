@@ -1,0 +1,102 @@
+@model IEnumerable<AspnetCoreMvcFull.Models.WorkFlow>
+@{
+    ViewData["Title"] = "WorkFlows";
+}
+
+<h2>WorkFlows</h2>
+
+<div class="mb-3">
+    <input type="text" id="searchBox" class="form-control" placeholder="Search...">
+</div>
+
+<button class="btn btn-success mb-3" id="btnCreate">Create Workflow</button>
+
+<table class="table table-striped">
+    <thead class="custom-header">
+        <tr>
+            <th>Process Name</th>
+            <th>Description</th>
+            <th>Required Machine</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="workflowTable">
+        @foreach (var wf in Model)
+        {
+            <tr>
+                <td>@wf.ProcessName</td>
+                <td>@wf.Description</td>
+                <td>@wf.Machine?.MachineName</td>
+                <td>
+                    <button class="btn btn-info btn-sm view-btn" data-id="@wf.ID">View</button>
+                    <button class="btn btn-primary btn-sm edit-btn" data-id="@wf.ID">Edit</button>
+                    <button class="btn btn-danger btn-sm delete-btn" data-id="@wf.ID">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="workflowModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="modalContent">
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Search functionality
+        $('#searchBox').on('keyup', function () {
+            var value = $(this).val().toLowerCase();
+            $('#workflowTable tr').filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        // Open Create Modal
+        $('#btnCreate').click(function () {
+            $.get('@Url.Action("CreateOrEdit")', function (data) {
+                $('#modalContent').html(data);
+                $('#workflowModal').modal('show');
+            });
+        });
+
+        // Open Edit Modal
+        $('.edit-btn').click(function () {
+            var id = $(this).data('id');
+            $.get('@Url.Action("CreateOrEdit")', { id: id }, function (data) {
+                $('#modalContent').html(data);
+                $('#workflowModal').modal('show');
+            });
+        });
+
+        // Open View Modal
+        $('.view-btn').click(function () {
+            var id = $(this).data('id');
+            $.get('@Url.Action("View")', { id: id }, function (data) {
+                $('#modalContent').html(data);
+                $('#workflowModal').modal('show');
+            });
+        });
+
+        // Delete workflow
+        $('.delete-btn').click(function () {
+            if (confirm("Are you sure you want to delete this workflow?")) {
+                var id = $(this).data('id');
+                $.post('@Url.Action("Delete")', { id: id }, function () {
+                    location.reload();
+                });
+            }
+        });
+    });
+</script>
+<style>
+    .custom-header th {
+        background-color: green !important;
+        color: white !important;
+    }
+</style>
+
+

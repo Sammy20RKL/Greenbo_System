@@ -1,0 +1,47 @@
+@model AspnetCoreMvcFull.Models.OrderOperation
+
+<div class="modal-header">
+    <h5 class="modal-title">Order Operation Details</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+    <div class="mb-3">
+        <label class="fw-bold">Project</label>
+        <div class="form-control bg-light">
+            @(Model.Project?.ProjectName ?? "N/A")
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="fw-bold">Part Number</label>
+        <div class="form-control bg-light">@Model.PartNumber</div>
+    </div>
+
+    <div class="mb-3">
+        <label class="fw-bold">Process</label>
+        <div class="form-control bg-light">@Model.Process</div>
+    </div>
+
+    <div class="mb-3">
+        <label class="fw-bold">Assigned To</label>
+        <div class="form-control bg-light">@Model.AssignedTo</div>
+    </div>
+
+    <div class="mb-3">
+        <label class="fw-bold">Status</label>
+        <div class="form-control bg-light">@Model.Status</div>
+    </div>
+
+    <div class="mb-3">
+        <label class="fw-bold">Created Date</label>
+        <div class="form-control bg-light">
+            @Model.CreatedDate?.ToString("dd/MM/yyyy HH:mm")
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>

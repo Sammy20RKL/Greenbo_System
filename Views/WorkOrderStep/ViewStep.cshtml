@@ -1,0 +1,36 @@
+@model AspnetCoreMvcFull.Models.WorkOrderStepEffort
+
+<div class="modal-header bg-info text-white">
+    <h5 class="modal-title">Step Effort Details</h5>
+    <button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+    <div><strong>Operation:</strong> @Model.OperationId</div>
+    <div><strong>Machine:</strong> @Model.Machine?.MachineName</div>
+    <div><strong>Operator:</strong> @Model.OperatorId</div>
+
+    <hr />
+
+    <div><strong>Assigned:</strong> @Model.QuantityAssigned</div>
+    <div><strong>Completed:</strong> @Model.QuantityCompleted</div>
+    <div><strong>Unit:</strong> @Model.UnitOfMeasure</div>
+
+    <hr />
+
+    <div><strong>Machine Start:</strong> @Model.MachineStartTime</div>
+    <div><strong>Machine End:</strong> @Model.MachineEndTime</div>
+
+    <div><strong>Expected Duration:</strong> @Model.ExpectedDuration minutes</div>
+
+    <hr />
+
+    <div><strong>Created:</strong> @Model.CreatedAt</div>
+    <div><strong>Updated:</strong> @Model.UpdatedAt</div>
+
+</div>
+
+<div class="modal-footer d-flex justify-content-center gap-2">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>

@@ -40,13 +40,15 @@ namespace AspnetCoreMvcFull.Controllers
     public IActionResult ViewOrderOperation(long id)
     {
       var operation = _context.OrderOperations
-         // .Include(o => o.Project)
+          .Include(o => o.Project)           // Get project name
           .FirstOrDefault(o => o.ID == id);
 
-      if (operation == null) return NotFound();
+      if (operation == null)
+        return NotFound();
 
-      return View(operation);
+      return PartialView("ViewOrderOperation", operation);
     }
+
 
     // DELETE: Delete order operation
     public async Task<IActionResult> Delete(long id)
@@ -62,12 +64,14 @@ namespace AspnetCoreMvcFull.Controllers
     }
     public IActionResult CreateOrderOperation()
     {
+      // Load users for AssignedTo dropdown
+      ViewBag.Users = new SelectList(_context.Users.ToList(), "ID", "Name");
       return View();
     }
 
     // POST: Save new OrderOperation
     [HttpPost]
-    public IActionResult Create(OrderOperation order)
+    public IActionResult CreateOrderOperation(OrderOperation order)
     {
       if (ModelState.IsValid)
       {
@@ -76,8 +80,17 @@ namespace AspnetCoreMvcFull.Controllers
         _context.OrderOperations.Add(order);
         _context.SaveChanges();
         TempData["Success"] = "Order Operation created successfully!";
-        return RedirectToAction("Create");
+        return RedirectToAction("IndexOrderOperation");
       }
+
+      // Collect all validation errors
+      var errors = ModelState.Values
+          .SelectMany(v => v.Errors)
+          .Select(e => e.ErrorMessage)
+          .ToList();
+
+      TempData["Error"] = "Failed to save: " + string.Join(", ", errors);
+      ViewBag.Users = new SelectList(_context.Users.ToList(), "ID", "Name", order.AssignedTo);
       return View(order);
     }
 
@@ -92,8 +105,8 @@ namespace AspnetCoreMvcFull.Controllers
             p.ProjectName,
             p.CompanyID,
             p.Status
-          })
-          .ToList();
+          }).ToList();
+
       return Json(projects);
     }
 
@@ -105,11 +118,25 @@ namespace AspnetCoreMvcFull.Controllers
           .Where(p => p.ProjectID == projectId)
           .Select(p => new
           {
+            p.ID,  // Add this line
             p.PartNumber,
             p.Description
-          })
-          .ToList();
+          }).ToList();
       return Json(parts);
+    }
+
+    // AJAX: Get workflow processes
+    [HttpGet]
+    public IActionResult GetProcesses()
+    {
+      var processes = _context.WorkFlow
+          .Select(w => new
+          {
+            w.ID,
+            w.ProcessName
+          }).ToList();
+
+      return Json(processes);
     }
   }
 }

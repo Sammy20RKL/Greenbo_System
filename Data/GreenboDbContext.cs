@@ -17,7 +17,9 @@ namespace AspnetCoreMvcFull.Data
     public DbSet<MachineRegistration> MachineRegistrations { get; set; }
     public DbSet<MachineAllocation> MachineAllocations { get; set; }
     public DbSet<OrderOperation> OrderOperations { get; set; }
-
+    public DbSet<User> Users { get; set; }
+    public DbSet<WorkFlow> WorkFlow { get; set; }
+      public DbSet<WorkOrderStepEffort> WorkOrderStepEffort { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +30,16 @@ namespace AspnetCoreMvcFull.Data
       modelBuilder.Entity<MachineRegistration>().ToTable("MachineRegistration");
       modelBuilder.Entity<MachineAllocation>().ToTable("MachineAllocation");
       modelBuilder.Entity<OrderOperation>().ToTable("OrderOperations");
+      modelBuilder.Entity<User>().ToTable("Users");
+      modelBuilder.Entity<WorkFlow>().ToTable("WorkFlow");
+      modelBuilder.Entity<WorkOrderStepEffort>().ToTable("WorkOrderStepEffort");
+
+      modelBuilder.Entity<MaterialList>(entity =>
+      {
+        entity.Property(e => e.TotalWeight).HasPrecision(18, 4);
+        entity.Property(e => e.UnitWeight).HasPrecision(18, 4);
+      });
+
 
       base.OnModelCreating(modelBuilder);
     }
