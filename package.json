@@ -1,5 +1,5 @@
 {
-  "name": "sneat-bootstrap-html-aspnet-core-mvc-admin-template-free",
+  "name": " Swizzsoft-bootstrap-html-aspnet-core-mvc",
   "description": "Most Powerful & Comprehensive Free Bootstrap 5 HTML Admin Dashboard Template built for developers! 🚀",
   "license": "MIT",
   "version": "3.0.0",
@@ -13,7 +13,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/themeselection/sneat-html-admin-template-free.git"
+    "url": "git+Swizzsoft"
   },
   "homepage": "Swizzsoft",
   "keywords": [
