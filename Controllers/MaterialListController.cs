@@ -91,7 +91,7 @@ namespace AspnetCoreMvcFull.Controllers
     {
       if (materials == null || materials.Count == 0)
       {
-        TempData["Error"] = "You must add at least one material row.";
+       // TempData["Error"] = "You must add at least one material row.";
         return RedirectToAction("AddMaterialList", new { projectId = projectId });
       }
 
