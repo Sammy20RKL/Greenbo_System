@@ -41,7 +41,7 @@ namespace AspnetCoreMvcFull.Controllers
     {
       return View("CreateCompany", new Company());
     }
-
+    // POST: Create new customer
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Create(Company model)
@@ -51,7 +51,7 @@ namespace AspnetCoreMvcFull.Controllers
         // Get all form files at once
         var formFiles = Request.Form.Files;
 
-        // FILTER OUT EMPTY PROJECT ROWS directly from model.Projects
+        // CRITICAL: Filter out empty project rows FIRST (like SalesOrder does)
         if (model.Projects != null)
         {
           model.Projects = model.Projects
@@ -59,7 +59,7 @@ namespace AspnetCoreMvcFull.Controllers
             .ToList();
         }
 
-        // CHECK IF AT LEAST ONE PROJECT EXISTS
+        // CHECK IF AT LEAST ONE PROJECT EXISTS after filtering
         if (model.Projects == null || model.Projects.Count == 0)
         {
           ModelState.AddModelError("", "Please add at least one project with Name and Quantity.");
@@ -110,40 +110,29 @@ namespace AspnetCoreMvcFull.Controllers
           return View("CreateCompany", model);
         }
 
-        // CHECK FOR DUPLICATE PROJECTS IN DATABASE
-        foreach (var project in model.Projects)
-        {
-          var existingProject = _context.Projects
-              .FirstOrDefault(p =>
-                  p.ProjectName.ToLower() == project.ProjectName.ToLower() &&
-                  p.Quantity == project.Quantity &&
-                  p.Status == project.Status);
+        
+        // Remove navigation properties to avoid EF validation issues
+        ModelState.Remove("Projects");
 
-          if (existingProject != null)
-          {
-            ModelState.AddModelError("",
-                $"Project '{project.ProjectName}' with Quantity {project.Quantity} already exists in the database. Please modify or remove this duplicate.");
-            return View("CreateCompany", model);
-          }
-        }
-
-        // SAVE COMPANY HEADER
+        // SAVE COMPANY HEADER FIRST (like SalesOrder pattern)
         model.CreatedAt = DateTime.Now;
         model.CreatedBy = User.Identity?.Name ?? "System";
 
-        _context.Companies.Add(model);
-        _context.SaveChanges();   // Generates Company.ID
-
-        // SAVE PROJECT LINES with file handling
-        int savedCount = 0;
+        // Store projects temporarily and detach to prevent auto-save
         var projectsList = model.Projects.ToList();
+        model.Projects = null;
 
+        _context.Companies.Add(model);
+        _context.SaveChanges();   // This generates Company.ID
+
+        // Now attach saved CompanyID to each project and save
+        int savedCount = 0;
         for (int i = 0; i < projectsList.Count; i++)
         {
           var project = projectsList[i];
 
           project.ID = 0;
-          project.CompanyID = model.ID;
+          project.CompanyID = model.ID; // Link to parent company
           project.CreatedAt = DateTime.Now;
           project.CreatedBy = User.Identity?.Name ?? "System";
 
@@ -174,7 +163,7 @@ namespace AspnetCoreMvcFull.Controllers
 
         _context.SaveChanges();
 
-        TempData["Success"] = $"Company and {savedCount} project(s) created successfully!";
+        TempData["Success"] = $"Company '{model.CompanyName}' and {savedCount} project(s) created successfully!";
         return RedirectToAction("CompanyInformation");
       }
       catch (Exception ex)
@@ -193,6 +182,7 @@ namespace AspnetCoreMvcFull.Controllers
         return View("CreateCompany", model);
       }
     }
+
 
     [HttpGet]
     public IActionResult View(long id)
@@ -252,23 +242,6 @@ namespace AspnetCoreMvcFull.Controllers
           return View("ViewCompany", company);
         }
 
-        // CHECK FOR DUPLICATE PROJECTS IN DATABASE (Global check)
-        foreach (var project in NewProjects)
-        {
-          var existingProject = _context.Projects
-              .FirstOrDefault(p =>
-                  p.ProjectName.ToLower() == project.ProjectName.ToLower() &&
-                  p.Quantity == project.Quantity &&
-                  p.Status == project.Status);
-
-          if (existingProject != null)
-          {
-            ModelState.AddModelError("",
-                $"Project '{project.ProjectName}' with Quantity {project.Quantity} already exists in the database. Please modify or remove this duplicate.");
-            ViewBag.Projects = _context.Projects.Where(p => p.CompanyID == companyId).ToList();
-            return View("ViewCompany", company);
-          }
-        }
 
         // SAVE NEW PROJECTS with file handling
         int savedCount = 0;
@@ -533,10 +506,5 @@ namespace AspnetCoreMvcFull.Controllers
         return View(model);
       }
     }
-
-
-
-
-
   }
 }

@@ -87,7 +87,8 @@
                     <th style="width: 60px;">Remove</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="projectsTableBody">
+                <!-- Rows will be added dynamically here -->
             </tbody>
         </table>
     </div>
@@ -98,38 +99,53 @@
     </div>
 </form>
 
+<!-- Hidden template row - OUTSIDE the form, will never be submitted -->
+<table style="display:none;">
+    <tbody>
+        <tr id="projectRowTemplate">
+            <td><input name="Projects[__INDEX__].ProjectName" class="form-control bg-white text-dark" placeholder="Enter project name" /></td>
+            <td><input type="number" min="1" name="Projects[__INDEX__].Quantity" class="form-control bg-white text-dark" placeholder="0" /></td>
+            <td>
+                <select name="Projects[__INDEX__].Status" class="form-select bg-white text-dark">
+                    <option value="New" selected>New</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </td>
+            <td><input type="file" name="Projects[__INDEX__].FileUpload" class="form-control bg-white text-dark" /></td>
+            <td class="text-center"><button type="button" class="btn btn-danger btn-sm delete-row-btn">X</button></td>
+        </tr>
+    </tbody>
+</table>
+
 @section Scripts {
     <script>
-
-                window.onload = function() {
+        document.addEventListener('DOMContentLoaded', function() {
             let projectIndex = 0;
 
             const addBtn = document.getElementById('addProjectRow');
-            const tbody = document.querySelector('#projectsTable tbody');
+            const tbody = document.getElementById('projectsTableBody');
             const companyForm = document.getElementById('companyForm');
             const saveBtn = document.getElementById('saveBtn');
+            const template = document.getElementById('projectRowTemplate');
 
-            // Add new project row
+            let isSubmitting = false;
+
+            // Add new project row by cloning template
             addBtn.addEventListener('click', function () {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><input name="Projects[${projectIndex}].ProjectName" class="form-control bg-white text-dark" placeholder="Enter project name" /></td>
-                    <td><input type="number" min="1" name="Projects[${projectIndex}].Quantity" class="form-control bg-white text-dark" placeholder="0" /></td>
-                    <td>
-                        <select name="Projects[${projectIndex}].Status" class="form-select bg-white text-dark">
-                            <option value="New" selected>New</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Pending">Pending</option>
-                        </select>
-                    </td>
-                    <td><input type="file" name="Projects[${projectIndex}].FileUpload" class="form-control bg-white text-dark" /></td>
-                    <td class="text-center"><button type="button" class="btn btn-danger btn-sm delete-row-btn">X</button></td>
-                `;
-                tbody.appendChild(row);
+                // Clone the template row
+                const newRow = template.cloneNode(true);
+                newRow.removeAttribute('id'); // Remove template id
+
+                // Replace __INDEX__ with actual index number
+                newRow.innerHTML = newRow.innerHTML.replace(/__INDEX__/g, projectIndex);
+
+                // Append to tbody
+                tbody.appendChild(newRow);
                 projectIndex++;
             });
 
-            // Delete project row
+            // Delete project row using event delegation
             tbody.addEventListener('click', function(e) {
                 if (e.target.classList.contains('delete-row-btn')) {
                     if (confirm('Are you sure you want to delete this project row?')) {
@@ -142,61 +158,51 @@
             companyForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // Get all rows
-                const rows = Array.from(tbody.querySelectorAll('tr'));
+                // Prevent double submission
+                if (isSubmitting) {
+                    console.log('Form already submitting...');
+                    return false;
+                }
 
-                // Filter valid rows
-                const validRows = rows.filter(row => {
-                    const name = row.querySelector('input[name*="ProjectName"]').value.trim();
-                    const qty = row.querySelector('input[name*="Quantity"]').value.trim();
-                    return name && qty && parseInt(qty) > 0;
+                // Get all rows currently in table
+                const allRows = tbody.querySelectorAll('tr');
+
+                // Count valid rows (must have name and quantity > 0)
+                let validCount = 0;
+                allRows.forEach(row => {
+                    const nameInput = row.querySelector('input[name*="ProjectName"]');
+                    const qtyInput = row.querySelector('input[name*="Quantity"]');
+
+                    if (nameInput && qtyInput) {
+                        const name = nameInput.value.trim();
+                        const qty = qtyInput.value.trim();
+                        if (name && qty && parseInt(qty) > 0) {
+                            validCount++;
+                        }
+                    }
                 });
 
                 // Check if at least one valid project exists
-                if (validRows.length === 0) {
+                if (validCount === 0) {
                     alert('Please add at least one project with name and quantity before saving!');
                     return false;
                 }
 
                 // Show confirmation
-                if (!confirm(`Are you sure you want to save this company and ${validRows.length} project(s)?`)) {
+                if (!confirm(`Are you sure you want to save this company and ${validCount} project(s)?`)) {
                     return false;
                 }
 
-                // Disable button to prevent double click
+                // Set flag to prevent re-submission
+                isSubmitting = true;
+
+                // Disable button
                 saveBtn.disabled = true;
                 saveBtn.textContent = 'Saving...';
 
-                // Remove empty rows from DOM
-                rows.forEach(row => {
-                    if (!validRows.includes(row)) {
-                        row.remove();
-                    }
-                });
-
-                // REINDEX remaining rows to be sequential (0, 1, 2, 3...)
-                const remainingRows = Array.from(tbody.querySelectorAll('tr'));
-                remainingRows.forEach((row, newIndex) => {
-                    // Update ProjectName input
-                    const nameInput = row.querySelector('input[name*="ProjectName"]');
-                    nameInput.name = `Projects[${newIndex}].ProjectName`;
-
-                    // Update Quantity input
-                    const qtyInput = row.querySelector('input[name*="Quantity"]');
-                    qtyInput.name = `Projects[${newIndex}].Quantity`;
-
-                    // Update Status select
-                    const statusSelect = row.querySelector('select[name*="Status"]');
-                    statusSelect.name = `Projects[${newIndex}].Status`;
-
-                    // Update FileUpload input
-                    const fileInput = row.querySelector('input[type="file"]');
-                    fileInput.name = `Projects[${newIndex}].FileUpload`;
-                });
-
-                // Submit form
+                // Submit the form
                 companyForm.submit();
             });
-        }
+        });
     </script>
 }
