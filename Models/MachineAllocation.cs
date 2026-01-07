@@ -14,7 +14,7 @@ namespace AspnetCoreMvcFull.Models
     public long? ProjectID { get; set; }
 
     [StringLength(50)]
-    public string UserID { get; set; }
+    public string? UserID { get; set; }
 
     public DateTime Datex { get; set; } = DateTime.Now;
 

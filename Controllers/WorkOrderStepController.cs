@@ -103,6 +103,7 @@ namespace AspnetCoreMvcFull.Controllers
         existing.QuantityCompleted = model.QuantityCompleted;
         existing.UnitOfMeasure = model.UnitOfMeasure;
         existing.ExpectedDuration = model.ExpectedDuration;
+        existing.ActualDuration = model.ActualDuration;
         existing.MachineStartTime = model.MachineStartTime;
         existing.MachineEndTime = model.MachineEndTime;
         existing.UpdatedAt = DateTime.Now;

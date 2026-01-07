@@ -1,5 +1,6 @@
 using AspnetCoreMvcFull.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 
 namespace AspnetCoreMvcFull.Data
 {
@@ -39,9 +40,11 @@ namespace AspnetCoreMvcFull.Data
         entity.Property(e => e.TotalWeight).HasPrecision(18, 4);
         entity.Property(e => e.UnitWeight).HasPrecision(18, 4);
       });
+      
 
 
       base.OnModelCreating(modelBuilder);
     }
+   
   }
 }

@@ -54,9 +54,15 @@
             <input asp-for="UnitOfMeasure" class="form-control" required/>
         </div>
 
-        <div class="mb-2">
+        <div class="row mb-2">
+          <div class="col">
             <label>Expected Duration (minutes)</label>
             <input asp-for="ExpectedDuration" class="form-control" required/>
+            </div>
+            <div class="col">
+                <label>Actual Duration (minutes)</label>
+                <input asp-for="ActualDuration" class="form-control" />
+            </div>
         </div>
 
         <div class="row mb-2">
